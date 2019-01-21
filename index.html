@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>THREE ANNUEL</title>
+</head>
+
+<style>
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+    }
+
+    body {
+        background-color: #ffffff;
+        margin: 0;
+        overflow: hidden;
+        font-family: arial;
+    }
+
+    #canva{
+        width: 100%;
+        height: 100%;
+    }
+
+    #blocker {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #instructions {
+        width: 100%;
+        height: 100%;
+        display: -webkit-box;
+        display: -moz-box;
+        display: box;
+        -webkit-box-orient: horizontal;
+        -moz-box-orient: horizontal;
+        box-orient: horizontal;
+        -webkit-box-pack: center;
+        -moz-box-pack: center;
+        box-pack: center;
+        -webkit-box-align: center;
+        -moz-box-align: center;
+        box-align: center;
+        color: #ffffff;
+        text-align: center;
+        cursor: pointer;
+    }
+</style>
+
+<body>
+    <div id="blocker">
+        <div id="instructions">
+            <span style="font-size:40px">Click to play</span>
+            <br />
+            (Z, Q, S, D = Move, SPACE = Jump, MOUSE = Look around)
+        </div>
+    </div>
+    <div id="canva"></div>
+    <script src="static/js/three.min.js"></script>
+    <script src="static/js/PointerLockControls.js"></script>
+    <script src="static/js/ColladaLoader.js"></script>
+    <script src="static/js/WebGL.js"></script>
+    <script src="static/js/Stats.js"></script>
+    <script src="static/js/DatGui.js"></script>
+    <script src="static/js/Scene.js"></script>
+</body>
+
+</html>
