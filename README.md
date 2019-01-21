@@ -8,15 +8,15 @@
 </div>
 
 <p align="center">
-  <iframe
+  <a
     width="300"
     height="200"
-    src="https://raw.githubusercontent.com/mickdec/Wormler/master/index.html">
-</iframe>
+    href="https://raw.githubusercontent.com/mickdec/Wormler/master/index.html">TEST IT !
+  </a>
 </p>
 <!-- <p align="center">
   <img style="width:70%" src="https://raw.githubusercontent.com/mickdec/Wormler/master/READMERES/01.png" />
-</p> --> -->
+</p> -->
 
 
 <h2>REQUIREMENTS</h2>
