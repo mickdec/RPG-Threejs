@@ -11,7 +11,7 @@
   <a
     width="300"
     height="200"
-    href=" https://mickdec.github.io/RPG-Threejs/">TEST IT !
+    href="https://mickdec.github.io/RPG-Threejs/">TEST IT !
   </a>
 </p>
 <!-- <p align="center">
