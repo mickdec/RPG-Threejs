@@ -203,17 +203,17 @@ function init() {
                     node.material = new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Fur.jpg') });
                 }
             });
-            avatar.position.x = 250;
+            avatar.position.x = Math.floor(Math.random() * (250 - (-250)) +(-250));
             avatar.position.y = 2;
-            avatar.position.z = Math.floor(Math.random() * 20 - 10) * 20;
+            avatar.position.z = Math.floor(Math.random() * (250 - (-250)) +(-250));
             let size = (Math.floor(Math.random() * 5) + 7);
             avatar.scale.set(size, size, size);
             avatarList.push(avatar);
             avatar.rotation.x -= 0.04;
             avatar.rotation.z -= Math.random() * (10 - 1) + 1;
 
-                //MAX X = 250 // -
-                //MAX Z = 
+                //MAX X = 250 // -250
+                //MAX Z = 250 // -250
 
             let k = 0;
             let j = 0;
