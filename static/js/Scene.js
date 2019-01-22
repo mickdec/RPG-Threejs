@@ -191,7 +191,36 @@ function init() {
 
     scene.add(floor);
 
-    for (var i = 0; i < 10; i++) {
+    function rotate(avatar) {
+        if (!avatar.initrotate) {
+            avatar.initrotate = true;
+            if (avatar.rotation.z > 3.125) {
+                avatar.rotaMin = Math.random() * 3;
+                avatar.rotatePlus = setInterval(() => {
+                    avatar.rotation.z -= 0.025;
+                    if (avatar.rotation.z <= avatar.rotaMin) {
+                        clearInterval(avatar.rotatePlus);
+                        avatar.rotatePlus = setInterval(() => { }, 100000);
+                        avatar.initrotate = false;
+                        avatar.j = 0;
+                    }
+                }, 0);
+            } else if (avatar.rotation.z < 3.125) {
+                avatar.rotaMax = (Math.random() * 3);
+                avatar.rotateMoin = setInterval(() => {
+                    avatar.rotation.z -= 0.02;
+                    if (avatar.rotation.z == avatar.rotaMax) {
+                        clearInterval(avatar.rotateMoin);
+                        avatar.rotateMin = setInterval(() => { }, 100000);
+                        avatar.initrotate = false;
+                        avatar.j = 0;
+                    }
+                }, 0);
+            }
+        }
+    }
+
+    for (var i = 0; i < 1; i++) {
         var loadering = new THREE.ColladaLoader();
         loadering.load('static/models/monster/Wolf_dae.dae', function (collada) {
             var avatar = collada.scene;
@@ -203,40 +232,64 @@ function init() {
                     node.material = new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Fur.jpg') });
                 }
             });
-            avatar.position.x = Math.floor(Math.random() * (250 - (-250)) +(-250));
+            // avatar.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
+            // avatar.position.y = 2;
+            // avatar.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
+
+            avatar.position.x = 0;
             avatar.position.y = 2;
-            avatar.position.z = Math.floor(Math.random() * (250 - (-250)) +(-250));
+            avatar.position.z = -10;
+
             let size = (Math.floor(Math.random() * 5) + 7);
             avatar.scale.set(size, size, size);
             avatarList.push(avatar);
             avatar.rotation.x -= 0.04;
-            avatar.rotation.z -= Math.random() * (10 - 1) + 1;
+            avatar.rotation.z -= Math.random() * -6.25;
 
-                //MAX X = 250 // -250
-                //MAX Z = 250 // -250
+            avatar.initrotate = false;
 
-            let k = 0;
-            let j = 0;
+            avatar.k = 0;
+            avatar.j = 0;
             setInterval(() => {
-            MaxPath = Math.floor(Math.random() * (400 - 100) + 100);
-                k++;
-                j++;
-                // if (k < 100) {
-                //     avatar.rotation.x += 0.002;
-                // } else {
-                //     if (k == 200) {
-                //         k = 0;
-                //     }
-                //     avatar.rotation.x -= 0.002;
-                // }
-                // if (j < MaxPath) {
-                //     avatar.position.z += 0.05;
-                // } else {
-                //     if (j == Math.floor(MaxPath*2)) {
-                //         j = 0;
-                //     }
-                //     avatar.position.z -= 0.05;
-                // }
+                avatar.k++;
+                if (avatar.k < 100) {
+                    avatar.rotation.x += 0.002;
+                } else {
+                    if (avatar.k == 200) {
+                        avatar.k = 0;
+                    }
+                    avatar.rotation.x -= 0.002;
+                }
+                avatar.j = avatar.j + 1;
+                console.log(avatar.initrotate);
+                if (avatar.j < 1000 && !avatar.initrotate) {
+                    if (avatar.rotation.z >= 5.43875 || avatar.rotation.z <= 0.78125) {
+                        if (avatar.position.z >= 250) {
+                            avatar.j = 2000;
+                            rotate(avatar);
+                        }
+                        avatar.position.z += 0.05;
+                    } else if (avatar.rotation.z >= 0.78125 && avatar.rotation.z <= 2.34375) {
+                        if (avatar.position.x >= 250) {
+                            avatar.j = 2000;
+                            rotate(avatar);
+                        }
+                        avatar.position.x += 0.025;
+                        avatar.position.z -= 0.025;
+                    } else if (avatar.rotation.z >= 2.34375 && avatar.rotation.z <= 3.90625) {
+                        if (avatar.position.x >= 250) {
+                            avatar.j = 2000;
+                            rotate(avatar);
+                        }
+                        avatar.position.z -= 0.025;
+                    } else if (avatar.rotation.z >= 3.90625 && avatar.rotation.z <= 5.43875) {
+                        if (avatar.position.x >= 250) {
+                            avatar.j = 2000;
+                            rotate(avatar);
+                        }
+                        avatar.position.x -= 0.025;
+                    }
+                }
             }, 0);
             scene.add(avatar);
         });
