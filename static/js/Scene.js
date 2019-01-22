@@ -26,6 +26,17 @@ animate();
 function init() {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
     scene = new THREE.Scene();
+    var listener = new THREE.AudioListener();
+    camera.add(listener);
+
+    var sound = new THREE.Audio(listener);
+    var audioLoader = new THREE.AudioLoader();
+    audioLoader.load('sounds/ambiance.ogg', function (buffer) {
+        sound.setBuffer(buffer);
+        sound.setLoop(true);
+        sound.setVolume(0.5);
+        sound.play();
+    });
 
     var imagePrefix = "static/textures/skybox/hills2_";
     var directions = ["ft", "bk", "up", "dn", "rt", "lf"];
@@ -133,21 +144,30 @@ function init() {
     swordgr.position.y = controls.getObject().position.y - 13;
     swordgr.position.x = controls.getObject().position.x + 7;
 
+    var sound_sword_swing = new THREE.PositionalAudio(listener);
+    var audioLoader_sword_swing = new THREE.AudioLoader();
+    audioLoader_sword_swing.load('static/sounds/sword_swing.ogg', function (buffer) {
+        sound_sword_swing.setBuffer(buffer);
+        sound_sword_swing.setRefDistance(20);
+    });
+    swordgr.add(sound_sword_swing);
     controls.getObject().add(swordgr);
+
     let start_pos = swordgr.rotation.x;
     let animate_sword = false;
-    let sword_end_frist_pos = false;
+    let sword_end_first_pos = false;
     document.addEventListener('click', () => {
         if (!animate_sword) {
+            sound_sword_swing.play();
             animate_sword = true;
             let start_sword_anim = setInterval(() => {
-                if (swordgr.rotation.x > -1.5 && !sword_end_frist_pos) {
-                    swordgr.rotation.x -= 0.04;
+                if (swordgr.rotation.x > -2 && !sword_end_first_pos) {
+                    swordgr.rotation.x -= 0.06;
                 } else {
-                    sword_end_frist_pos = true;
-                    swordgr.rotation.x += 0.04;
+                    sword_end_first_pos = true;
+                    swordgr.rotation.x += 0.06;
                     if (swordgr.rotation.x >= 0.1) {
-                        sword_end_frist_pos = false;
+                        sword_end_first_pos = false;
                         animate_sword = false;
                         clearInterval(start_sword_anim);
                     }
@@ -195,7 +215,7 @@ function init() {
         if (!avatar.initrotate) {
             avatar.initrotate = true;
             if (avatar.rotation.z > 3.125) {
-                avatar.rotaMin = Math.random() * 3 + 3.125;
+                avatar.rotaMin = Math.random() * 3.125;
                 avatar.rotatePlus = setInterval(() => {
                     avatar.rotation.z -= 0.025;
                     if (avatar.rotation.z <= avatar.rotaMin) {
@@ -207,10 +227,10 @@ function init() {
                     }
                 }, 0);
             } else if (avatar.rotation.z < 3.125) {
-                avatar.rotaMax = Math.random() * 3;
+                avatar.rotaMax = Math.random() * 6.15;
                 avatar.rotateMoin = setInterval(() => {
-                    avatar.rotation.z -= 0.02;
-                    if (avatar.rotation.z == avatar.rotaMax) {
+                    avatar.rotation.z += 0.025;
+                    if (avatar.rotation.z >= avatar.rotaMax) {
                         clearInterval(avatar.rotateMoin);
                         avatar.rotateMin = setInterval(() => { }, 100000);
                         avatar.initrotate = false;
@@ -221,7 +241,7 @@ function init() {
         }
     }
 
-    for (var i = 0; i < 1; i++) {
+    for (var i = 0; i < 15; i++) {
         var loadering = new THREE.ColladaLoader();
         loadering.load('static/models/monster/Wolf_dae.dae', function (collada) {
             var avatar = collada.scene;
@@ -233,13 +253,10 @@ function init() {
                     node.material = new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Fur.jpg') });
                 }
             });
-            // avatar.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
-            // avatar.position.y = 2;
-            // avatar.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
-
-            avatar.position.x = 0;
+            avatar.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
             avatar.position.y = 2;
-            avatar.position.z = -10;
+            avatar.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
+
 
             let size = (Math.floor(Math.random() * 5) + 7);
             avatar.scale.set(size, size, size);
@@ -265,27 +282,27 @@ function init() {
                 if (avatar.j < 1000 && !avatar.initrotate) {
                     if (avatar.rotation.z >= 5.43875 || avatar.rotation.z <= 0.78125) {
                         if (avatar.position.z >= 250) {
-                            avatar.j = 2000;
+                            rotate(avatar);
                         }
-                        avatar.position.z += 0.05;
+                        avatar.position.z += 0.08;
                     } else if (avatar.rotation.z >= 0.78125 && avatar.rotation.z <= 2.34375) {
-                        if (avatar.position.x >= 250) {
-                            avatar.j = 2000;
+                        if (avatar.position.x >= 250 || avatar.position.z <= -250) {
+                            rotate(avatar);
                         }
-                        avatar.position.x += 0.025;
-                        avatar.position.z -= 0.025;
+                        avatar.position.x += 0.04;
+                        avatar.position.z -= 0.04;
                     } else if (avatar.rotation.z >= 2.34375 && avatar.rotation.z <= 3.90625) {
-                        if (avatar.position.x >= 250) {
-                            avatar.j = 2000;
+                        if (avatar.position.z <= -250) {
+                            rotate(avatar);
                         }
-                        avatar.position.z -= 0.025;
+                        avatar.position.z -= 0.05;
                     } else if (avatar.rotation.z >= 3.90625 && avatar.rotation.z <= 5.43875) {
-                        if (avatar.position.x >= 250) {
-                            avatar.j = 2000;
+                        if (avatar.position.x <= -250) {
+                            rotate(avatar);
                         }
-                        avatar.position.x -= 0.025;
+                        avatar.position.x -= 0.08;
                     }
-                }else{
+                } else {
                     rotate(avatar);
                 }
             }, 0);
