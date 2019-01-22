@@ -195,10 +195,11 @@ function init() {
         if (!avatar.initrotate) {
             avatar.initrotate = true;
             if (avatar.rotation.z > 3.125) {
-                avatar.rotaMin = Math.random() * 3;
+                avatar.rotaMin = Math.random() * 3 + 3.125;
                 avatar.rotatePlus = setInterval(() => {
                     avatar.rotation.z -= 0.025;
                     if (avatar.rotation.z <= avatar.rotaMin) {
+                        console.log(avatar.initrotate);
                         clearInterval(avatar.rotatePlus);
                         avatar.rotatePlus = setInterval(() => { }, 100000);
                         avatar.initrotate = false;
@@ -206,7 +207,7 @@ function init() {
                     }
                 }, 0);
             } else if (avatar.rotation.z < 3.125) {
-                avatar.rotaMax = (Math.random() * 3);
+                avatar.rotaMax = Math.random() * 3;
                 avatar.rotateMoin = setInterval(() => {
                     avatar.rotation.z -= 0.02;
                     if (avatar.rotation.z == avatar.rotaMax) {
@@ -261,34 +262,31 @@ function init() {
                     avatar.rotation.x -= 0.002;
                 }
                 avatar.j = avatar.j + 1;
-                console.log(avatar.initrotate);
                 if (avatar.j < 1000 && !avatar.initrotate) {
                     if (avatar.rotation.z >= 5.43875 || avatar.rotation.z <= 0.78125) {
                         if (avatar.position.z >= 250) {
                             avatar.j = 2000;
-                            rotate(avatar);
                         }
                         avatar.position.z += 0.05;
                     } else if (avatar.rotation.z >= 0.78125 && avatar.rotation.z <= 2.34375) {
                         if (avatar.position.x >= 250) {
                             avatar.j = 2000;
-                            rotate(avatar);
                         }
                         avatar.position.x += 0.025;
                         avatar.position.z -= 0.025;
                     } else if (avatar.rotation.z >= 2.34375 && avatar.rotation.z <= 3.90625) {
                         if (avatar.position.x >= 250) {
                             avatar.j = 2000;
-                            rotate(avatar);
                         }
                         avatar.position.z -= 0.025;
                     } else if (avatar.rotation.z >= 3.90625 && avatar.rotation.z <= 5.43875) {
                         if (avatar.position.x >= 250) {
                             avatar.j = 2000;
-                            rotate(avatar);
                         }
                         avatar.position.x -= 0.025;
                     }
+                }else{
+                    rotate(avatar);
                 }
             }, 0);
             scene.add(avatar);
