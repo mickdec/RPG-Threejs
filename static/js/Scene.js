@@ -412,7 +412,7 @@ function animate() {
                         blocker.style.backgroundColor = "black";
                         blocker.style.display = 'block';
                         instructions.style.display = '';
-                        instructions.innerHTML = 'YOUR DEAD<br>Press F5 to replay';
+                        instructions.innerHTML = 'YOU ARE DEAD<br>Press F5 to replay';
                         controls.unlock();
                     }, 0);
                 }
