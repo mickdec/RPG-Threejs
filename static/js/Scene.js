@@ -473,6 +473,13 @@ function animate() {
                     if (collision_results[0].object != null && collision_results[0].object.name.indexOf('wolf') != -1) {
                         spawn_health(collision_results[0].object.parent.position.z, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y);
                         let wolf_obj = collision_results[0].object.parent;
+
+                        for (let h = 0; h < monster_list.length - 1; h++) {
+                            if (monster_list[h] == wolf_obj.children[3]) {
+                                monster_list.splice(h, 1);
+                            }
+                        }
+
                         wolf_obj.remove(wolf_obj.children[3]);
                         scene.remove(wolf_obj);
                     }
