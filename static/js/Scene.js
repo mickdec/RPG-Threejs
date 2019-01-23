@@ -272,16 +272,7 @@ function init() {
 
     //Declaring wolves hit box
     const hit_box_wolf_geometry = new THREE.CubeGeometry(0.3, 1, 3, 1, 1, 1);
-    const hit_box_wolf_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe:true });
-
-    const test_box_geometry = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
-    const test_box_material = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true });
-    let testbox = new THREE.Mesh(test_box_geometry, test_box_material);
-    testbox.position.y = 7;
-    testbox.position.x = -20;
-    testbox.position.z = -20;
-    scene.add(testbox);
-    monster_list.push(testbox);
+    const hit_box_wolf_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
 
     //Declaring all the wolves
     for (let i = 0; i < 15; i++) {
@@ -458,9 +449,6 @@ function animate() {
                     dead_wolf_timer = true;
                     if (collision_results[0].object != null && collision_results[0].object.name.indexOf('wolf') != -1) {
                         let wolf_obj = collision_results[0].object.parent;
-                        
-                        console.log(wolf_obj);
-
                         wolf_obj.remove(wolf_obj.children[3]);
                         scene.remove(wolf_obj);
                     }
