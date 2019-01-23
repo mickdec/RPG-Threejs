@@ -22,6 +22,34 @@ let direction = new THREE.Vector3();
 let vertex = new THREE.Vector3();
 let color = new THREE.Color();
 
+
+//Declaring the power objects
+
+//Health
+//Declaring health hit box
+const hit_box_health_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
+const hit_box_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+const power_health_geometry = new THREE.SphereGeometry(1, 32, 32);
+const power_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+function spawn_health(posz, posx, posy) {
+    let health_rng = Math.floor(Math.random() * 10);
+    if (health_rng >= 5) {
+        let health_power = new THREE.Mesh(power_health_geometry, power_health_material);
+        health_power.position.z = posz;
+        health_power.position.y = posy;
+        health_power.position.x = posx;
+
+        //setting up the health hit box
+        health_power.hit_box_health = new THREE.Mesh(hit_box_health_geometry, hit_box_health_material);
+        health_power_list.push(health_power.hit_box_health);
+        health_power.add(health_power.hit_box_health);
+
+        health_power_list.push(health_power.hit_box_health);
+        scene.add(health_power);
+    }
+}
+
 init();
 animate();
 
@@ -148,7 +176,7 @@ function init() {
     document.addEventListener('keydown', on_key_down, false);
     document.addEventListener('keyup', on_key_up, false);
 
-    //Declaring the sword object its a global object
+    //Declaring the sword object, it's a global object
     let sword_geometry = new THREE.BoxGeometry(0.1, 30, 1);
     const sword_texture = new THREE.TextureLoader().load("static/textures/metal.jpg");
     let material_sword = new THREE.MeshBasicMaterial({ map: sword_texture, dithering: true });
@@ -173,22 +201,31 @@ function init() {
     });
     sword_group.add(sound_sword_swing);
 
+    //Declaring health bar
     player_health_group = new THREE.Group();
-
     for (let i = 0; i < 4; i++) {
-        let player_health_geometry = new THREE.SphereGeometry(0.5, 32, 32);
+        var heartShape = new THREE.Shape();
+        heartShape.moveTo(25, 25);
+        heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
+        heartShape.bezierCurveTo(30, 0, 30, 35, 30, 35);
+        heartShape.bezierCurveTo(30, 55, 10, 77, 25, 95);
+        heartShape.bezierCurveTo(60, 77, 80, 55, 80, 35);
+        heartShape.bezierCurveTo(80, 35, 80, 0, 50, 0);
+        heartShape.bezierCurveTo(35, 0, 25, 25, 25, 25);
+        var extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+        let player_health_geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
         let player_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
         player_health = new THREE.Mesh(player_health_geometry, player_health_material);
 
-        player_health.position.x = i + i;
-        player_health.position.z = i / 30;
+        player_health.scale.set(0.02, 0.02, 0.02);
+        player_health.rotation.z = 3.154;
+        player_health.position.x = i;
         player_health_group.add(player_health);
     }
-
     player_health_group.position.z = controls.getObject().position.z - 10;
     player_health_group.position.y = controls.getObject().position.y - 15;
-    player_health_group.position.x = controls.getObject().position.x - 15;
+    player_health_group.position.x = controls.getObject().position.x - 13;
 
     controls.getObject().add(player_health_group, sword_group);
 
@@ -353,29 +390,6 @@ function init() {
         });
     }
 
-    //Declaring the power objects
-
-    //Health
-    //Declaring health hit box
-    const hit_box_health_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
-    const hit_box_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
-    let power_health_geometry = new THREE.SphereGeometry(1, 32, 32);
-    let power_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    for (var i = 0; i < 10; i++) {
-        var health_power = new THREE.Mesh(power_health_geometry, power_health_material);
-        health_power.position.z = Math.floor(Math.random() * 20 - 10) * 20;
-        health_power.position.y = 4;
-        health_power.position.x = Math.floor(Math.random() * 20 - 10) * 20;
-
-        //setting up the health hit box
-        health_power.hit_box_health = new THREE.Mesh(hit_box_health_geometry, hit_box_health_material);
-        health_power_list.push(health_power.hit_box_health);
-        health_power.add(health_power.hit_box_health);
-
-        health_power_list.push(health_power.hit_box_health);
-        scene.add(health_power);
-    }
-
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -457,6 +471,7 @@ function animate() {
                 if (!dead_wolf_timer) {
                     dead_wolf_timer = true;
                     if (collision_results[0].object != null && collision_results[0].object.name.indexOf('wolf') != -1) {
+                        spawn_health(collision_results[0].object.parent.position.z, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y);
                         let wolf_obj = collision_results[0].object.parent;
                         wolf_obj.remove(wolf_obj.children[3]);
                         scene.remove(wolf_obj);
@@ -485,11 +500,22 @@ function animate() {
                     health_obj.remove(health_obj.children[0]);
                     scene.remove(health_obj);
 
-                    let player_health_geometry = new THREE.SphereGeometry(0.5, 32, 32);
+                    let heartShape = new THREE.Shape();
+                    heartShape.moveTo(25, 25);
+                    heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
+                    heartShape.bezierCurveTo(30, 0, 30, 35, 30, 35);
+                    heartShape.bezierCurveTo(30, 55, 10, 77, 25, 95);
+                    heartShape.bezierCurveTo(60, 77, 80, 55, 80, 35);
+                    heartShape.bezierCurveTo(80, 35, 80, 0, 50, 0);
+                    heartShape.bezierCurveTo(35, 0, 25, 25, 25, 25);
+                    let extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+                    let player_health_geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
                     let player_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
                     player_health = new THREE.Mesh(player_health_geometry, player_health_material);
-                    player_health.position.x = (player_health_group.children.length - 1) + (player_health_group.children.length - 1);
-                    player_health.position.z = (player_health_group.children.length - 1) / 30;
+
+                    player_health.scale.set(0.02, 0.02, 0.02);
+                    player_health.rotation.z = 3.154;
+                    player_health.position.x = player_health_group.children.length;
                     player_health_group.add(player_health);
                 }
                 health_timer = false;
