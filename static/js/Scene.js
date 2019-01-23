@@ -418,7 +418,7 @@ function animate() {
         if (!attack_timer) {
             attack_timer = true;
             let hit_box_sword_geometry = new THREE.CubeGeometry(5, 20, 30, 1, 1, 1);
-            let hit_box_sword_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+            let hit_box_sword_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: true });
             hit_box_sword = new THREE.Mesh(hit_box_sword_geometry, hit_box_sword_material);
             hit_box_sword.position.x = controls.getObject().position.x;
             hit_box_sword.position.y = controls.getObject().position.y;
