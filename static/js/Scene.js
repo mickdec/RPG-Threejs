@@ -1,9 +1,11 @@
 //Declaring global objects
 let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health;
 
+let speed = 400;
+
 let objects = [];
 let monster_list = [];
-let health_power_list = [];
+let power_list = [];
 let hit_box_sword;
 
 let move_forward = false;
@@ -12,7 +14,7 @@ let move_left = false;
 let move_right = false;
 let can_jump = false;
 let damage_timer = false;
-let health_timer = false;
+let power_timer = false;
 let attack_timer = false;
 let dead_wolf_timer = false;
 
@@ -26,7 +28,6 @@ let color = new THREE.Color();
 //Declaring the power objects
 
 //Health
-//Declaring health hit box
 const hit_box_health_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
 const hit_box_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
 const power_health_geometry = new THREE.SphereGeometry(1, 32, 32);
@@ -42,11 +43,34 @@ function spawn_health(posz, posx, posy) {
 
         //setting up the health hit box
         health_power.hit_box_health = new THREE.Mesh(hit_box_health_geometry, hit_box_health_material);
-        health_power_list.push(health_power.hit_box_health);
+        health_power.hit_box_health.name = "power_health";
         health_power.add(health_power.hit_box_health);
 
-        health_power_list.push(health_power.hit_box_health);
+        power_list.push(health_power.hit_box_health);
         scene.add(health_power);
+    }
+}
+
+//Speed
+const hit_box_speed_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
+const hit_box_speed_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+const power_speed_geometry = new THREE.SphereGeometry(1, 32, 32);
+const power_speed_material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+
+function spawn_speed(posz, posx, posy) {
+    let speed_rng = Math.floor(Math.random() * 10);
+    if (speed_rng >= 5) {
+        let speed_power = new THREE.Mesh(power_speed_geometry, power_speed_material);
+        speed_power.position.z = posz;
+        speed_power.position.y = posy;
+        speed_power.position.x = posx;
+
+        //setting up the speed hit box
+        speed_power.hit_box_speed = new THREE.Mesh(hit_box_speed_geometry, hit_box_speed_material);
+        speed_power.hit_box_speed.name = "power_speed";
+        speed_power.add(speed_power.hit_box_speed);
+        power_list.push(speed_power.hit_box_speed);
+        scene.add(speed_power);
     }
 }
 
@@ -471,15 +495,15 @@ function animate() {
                 if (!dead_wolf_timer) {
                     dead_wolf_timer = true;
                     if (collision_results[0].object != null && collision_results[0].object.name.indexOf('wolf') != -1) {
-                        spawn_health(collision_results[0].object.parent.position.z, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y);
-                        let wolf_obj = collision_results[0].object.parent;
+                        spawn_health(collision_results[0].object.parent.position.z, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y + 1);
+                        spawn_speed(collision_results[0].object.parent.position.z + 1, collision_results[0].object.parent.position.x + 1, collision_results[0].object.parent.position.y + 1);
 
+                        let wolf_obj = collision_results[0].object.parent;
                         for (let h = 0; h < monster_list.length - 1; h++) {
                             if (monster_list[h] == wolf_obj.children[3]) {
                                 monster_list.splice(h, 1);
                             }
                         }
-
                         wolf_obj.remove(wolf_obj.children[3]);
                         scene.remove(wolf_obj);
                     }
@@ -497,16 +521,14 @@ function animate() {
         let global_vertex = local_vertex.applyMatrix4(hit_box_player.matrix);
         let direction_vector = global_vertex.sub(hit_box_player.position);
         let collision_raycaster = new THREE.Raycaster(origin_point, direction_vector.clone().normalize());
-        let collision_results = collision_raycaster.intersectObjects(health_power_list);
+        let collision_results = collision_raycaster.intersectObjects(power_list);
         if (collision_results.length > 0 && collision_results[0].distance < direction_vector.length()) {
-            if (!health_timer) {
-                health_timer = true;
-                if (collision_results[0].object.parent != null && collision_results.length == 2) {
+            if (!power_timer) {
+                power_timer = true;
+                if (collision_results[0].object.parent != null && collision_results[0].object.name.indexOf('power_health') != -1) {
                     let health_obj = collision_results[0].object.parent;
-
                     health_obj.remove(health_obj.children[0]);
                     scene.remove(health_obj);
-
                     let heartShape = new THREE.Shape();
                     heartShape.moveTo(25, 25);
                     heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
@@ -519,13 +541,18 @@ function animate() {
                     let player_health_geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
                     let player_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
                     player_health = new THREE.Mesh(player_health_geometry, player_health_material);
-
                     player_health.scale.set(0.02, 0.02, 0.02);
                     player_health.rotation.z = 3.154;
                     player_health.position.x = player_health_group.children.length;
                     player_health_group.add(player_health);
                 }
-                health_timer = false;
+                else if (collision_results[0].object.parent != null && collision_results[0].object.name.indexOf('power_speed') != -1) {
+                    let speed_obj = collision_results[0].object.parent;
+                    speed_obj.remove(speed_obj.children[0]);
+                    scene.remove(speed_obj);
+                    speed += 10;
+                }
+                power_timer = false;
             }
         }
     }
@@ -548,10 +575,10 @@ function animate() {
         direction.normalize();
 
         if (move_forward || move_backward) {
-            velocity.z -= direction.z * 400.0 * delta;
+            velocity.z -= direction.z * speed * delta;
         }
         if (move_left || move_right) {
-            velocity.x -= direction.x * 400.0 * delta;
+            velocity.x -= direction.x * speed * delta;
         }
         if (on_object === true) {
             velocity.y = Math.max(0, velocity.y - 10);
