@@ -7,6 +7,7 @@ let speed = 400;
 let objects = [];
 let monster_list = [];
 let power_list = [];
+let test_array = [];
 let hit_box_sword;
 
 let move_forward = false;
@@ -17,6 +18,7 @@ let can_jump = false;
 let damage_timer = false;
 let power_timer = false;
 let attack_timer = false;
+let create_wolf_timer = false;
 let dead_wolf_timer = false;
 
 let prev_time = performance.now();
@@ -27,7 +29,6 @@ let color = new THREE.Color();
 
 
 //Declaring the power objects
-
 //Health
 const hit_box_health_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
 const hit_box_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
@@ -95,6 +96,119 @@ function spawn_jump(posz, posx, posy) {
         jump_power.add(jump_power.hit_box_jump);
         power_list.push(jump_power.hit_box_jump);
         scene.add(jump_power);
+    }
+}
+
+//Declaring functions for monsters
+function rotate(monster) {
+    if (!monster.initrotate) {
+        monster.initrotate = true;
+        if (monster.rotation.z > 3.125) {
+            monster.rotaMin = Math.random() * 3.125;
+            monster.rotatePlus = setInterval(() => {
+                monster.rotation.z -= 0.025;
+                if (monster.rotation.z <= monster.rotaMin) {
+                    clearInterval(monster.rotatePlus);
+                    monster.rotatePlus = setInterval(() => { }, 100000);
+                    monster.initrotate = false;
+                    monster.walking_distance = 0;
+                }
+            }, 0);
+        } else if (monster.rotation.z < 3.125) {
+            monster.rotaMax = Math.random() * 6.15;
+            monster.rotateMoin = setInterval(() => {
+                monster.rotation.z += 0.025;
+                if (monster.rotation.z >= monster.rotaMax) {
+                    clearInterval(monster.rotateMoin);
+                    monster.rotateMin = setInterval(() => { }, 100000);
+                    monster.initrotate = false;
+                    monster.walking_distance = 0;
+                }
+            }, 0);
+        }
+    }
+}
+//Declaring wolves hit box
+const hit_box_wolf_geometry = new THREE.CubeGeometry(0.3, 1, 3, 1, 1, 1);
+const hit_box_wolf_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+//Function to create wolves
+function create_wolves() {
+    for (let i = 0; i < 2; i++) {
+        //Loading the model
+        let wolf_loader = new THREE.ColladaLoader();
+        wolf_loader.load('static/models/monster/Wolf_dae.dae', function (collada) {
+            var monster = collada.scene;
+            //setting up the model texture
+            collada.scene.traverse(function (node) {
+                if (node.isMesh && node.name == "Wolf_obj_body") {
+                    node.material = new THREE.MeshBasicMaterial({ map: new THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Body.jpg') });
+                }
+                if (node.isMesh && node.name == "Wolf_obj_fur") {
+                    node.material = new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Fur.jpg') });
+                }
+            });
+            //setting up the model random position
+            monster.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
+            monster.position.y = 2;
+            monster.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
+
+            //setting up the wolf hit box
+            monster.name = `${i}_wolf`;
+            monster.hit_box_wolf = new THREE.Mesh(hit_box_wolf_geometry, hit_box_wolf_material);
+            monster.hit_box_wolf.name = `${i}_wolf_hit_box`;
+            monster_list.push(monster.hit_box_wolf);
+            monster.add(monster.hit_box_wolf);
+
+            //setting up the random wolf size
+            let size = (Math.floor(Math.random() * 5) + 7);
+            monster.scale.set(size, size, size);
+            monster.rotation.x -= 0.04;
+            monster.rotation.z -= Math.random() * -6.25;
+
+            //setting up all the process for the wolf movement pattern
+            monster.initrotate = false;
+            monster.rotating_loop = 0;
+            monster.walking_distance = 0;
+            setInterval(() => {
+                monster.rotating_loop++;
+                if (monster.rotating_loop < 100) {
+                    monster.rotation.x += 0.002;
+                } else {
+                    if (monster.rotating_loop == 200) {
+                        monster.rotating_loop = 0;
+                    }
+                    monster.rotation.x -= 0.002;
+                }
+                monster.walking_distance = monster.walking_distance + 1;
+                if (monster.walking_distance < 1000 && !monster.initrotate) {
+                    if (monster.rotation.z >= 5.43875 || monster.rotation.z <= 0.78125) {
+                        if (monster.position.z >= 250) {
+                            rotate(monster);
+                        }
+                        monster.position.z += 0.08;
+                    } else if (monster.rotation.z >= 0.78125 && monster.rotation.z <= 2.34375) {
+                        if (monster.position.x >= 250 || monster.position.z <= -250) {
+                            rotate(monster);
+                        }
+                        monster.position.x += 0.04;
+                        monster.position.z -= 0.04;
+                    } else if (monster.rotation.z >= 2.34375 && monster.rotation.z <= 3.90625) {
+                        if (monster.position.z <= -250) {
+                            rotate(monster);
+                        }
+                        monster.position.z -= 0.05;
+                    } else if (monster.rotation.z >= 3.90625 && monster.rotation.z <= 5.43875) {
+                        if (monster.position.x <= -250) {
+                            rotate(monster);
+                        }
+                        monster.position.x -= 0.08;
+                    }
+                } else {
+                    rotate(monster);
+                }
+            }, 0);
+            scene.add(monster);
+        });
     }
 }
 
@@ -325,118 +439,20 @@ function init() {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    //Declaring functions for monsters
-    function rotate(monster) {
-        if (!monster.initrotate) {
-            monster.initrotate = true;
-            if (monster.rotation.z > 3.125) {
-                monster.rotaMin = Math.random() * 3.125;
-                monster.rotatePlus = setInterval(() => {
-                    monster.rotation.z -= 0.025;
-                    if (monster.rotation.z <= monster.rotaMin) {
-                        clearInterval(monster.rotatePlus);
-                        monster.rotatePlus = setInterval(() => { }, 100000);
-                        monster.initrotate = false;
-                        monster.walking_distance = 0;
-                    }
-                }, 0);
-            } else if (monster.rotation.z < 3.125) {
-                monster.rotaMax = Math.random() * 6.15;
-                monster.rotateMoin = setInterval(() => {
-                    monster.rotation.z += 0.025;
-                    if (monster.rotation.z >= monster.rotaMax) {
-                        clearInterval(monster.rotateMoin);
-                        monster.rotateMin = setInterval(() => { }, 100000);
-                        monster.initrotate = false;
-                        monster.walking_distance = 0;
-                    }
-                }, 0);
-            }
-        }
-    }
+    //Declaring test hit box
+    const hit_box_test_geometry = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
+    const hit_box_test_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+    let hit_box_test = new THREE.Mesh(hit_box_test_geometry, hit_box_test_material);
 
-    //Declaring wolves hit box
-    const hit_box_wolf_geometry = new THREE.CubeGeometry(0.3, 1, 3, 1, 1, 1);
-    const hit_box_wolf_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+    const test_texture = new THREE.TextureLoader().load("static/textures/rock.jpg");
+    const test_material = new THREE.MeshBasicMaterial({ map: test_texture, dithering: true });
+    let test = new THREE.Mesh(hit_box_test_geometry, test_material);
 
-    //Declaring all the wolves
-    for (let i = 0; i < 15; i++) {
-        //Loading the model
-        let wolf_loader = new THREE.ColladaLoader();
-        wolf_loader.load('static/models/monster/Wolf_dae.dae', function (collada) {
-            var monster = collada.scene;
-            //setting up the model texture
-            collada.scene.traverse(function (node) {
-                if (node.isMesh && node.name == "Wolf_obj_body") {
-                    node.material = new THREE.MeshBasicMaterial({ map: new THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Body.jpg') });
-                }
-                if (node.isMesh && node.name == "Wolf_obj_fur") {
-                    node.material = new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture('static/models/monster/Wolf_Fur.jpg') });
-                }
-            });
-            //setting up the model random position
-            monster.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
-            monster.position.y = 2;
-            monster.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
-
-            //setting up the wolf hit box
-            monster.name = `${i}_wolf`;
-            monster.hit_box_wolf = new THREE.Mesh(hit_box_wolf_geometry, hit_box_wolf_material);
-            monster.hit_box_wolf.name = `${i}_wolf_hit_box`;
-            monster_list.push(monster.hit_box_wolf);
-            monster.add(monster.hit_box_wolf);
-
-            //setting up the random wolf size
-            let size = (Math.floor(Math.random() * 5) + 7);
-            monster.scale.set(size, size, size);
-            monster.rotation.x -= 0.04;
-            monster.rotation.z -= Math.random() * -6.25;
-
-            //setting up all the process for the wolf movement pattern
-            monster.initrotate = false;
-            monster.rotating_loop = 0;
-            monster.walking_distance = 0;
-            setInterval(() => {
-                monster.rotating_loop++;
-                if (monster.rotating_loop < 100) {
-                    monster.rotation.x += 0.002;
-                } else {
-                    if (monster.rotating_loop == 200) {
-                        monster.rotating_loop = 0;
-                    }
-                    monster.rotation.x -= 0.002;
-                }
-                monster.walking_distance = monster.walking_distance + 1;
-                if (monster.walking_distance < 1000 && !monster.initrotate) {
-                    if (monster.rotation.z >= 5.43875 || monster.rotation.z <= 0.78125) {
-                        if (monster.position.z >= 250) {
-                            rotate(monster);
-                        }
-                        monster.position.z += 0.08;
-                    } else if (monster.rotation.z >= 0.78125 && monster.rotation.z <= 2.34375) {
-                        if (monster.position.x >= 250 || monster.position.z <= -250) {
-                            rotate(monster);
-                        }
-                        monster.position.x += 0.04;
-                        monster.position.z -= 0.04;
-                    } else if (monster.rotation.z >= 2.34375 && monster.rotation.z <= 3.90625) {
-                        if (monster.position.z <= -250) {
-                            rotate(monster);
-                        }
-                        monster.position.z -= 0.05;
-                    } else if (monster.rotation.z >= 3.90625 && monster.rotation.z <= 5.43875) {
-                        if (monster.position.x <= -250) {
-                            rotate(monster);
-                        }
-                        monster.position.x -= 0.08;
-                    }
-                } else {
-                    rotate(monster);
-                }
-            }, 0);
-            scene.add(monster);
-        });
-    }
+    test.position.y = 5;
+    test.position.x = 0;
+    test.position.z = -30;
+    test_array.push(hit_box_test);
+    scene.add(test);
 
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -506,8 +522,25 @@ function animate() {
         }
 
     })
-    //Setting up sword attack collision
+
+    //Setting up monster creation collision event
     if (hit_box_sword != null && hit_box_sword.position.y != -100) {
+        for (let vertex_index = 0; vertex_index < hit_box_sword.geometry.vertices.length; vertex_index++) {
+            let local_vertex = hit_box_sword.geometry.vertices[vertex_index].clone();
+            let global_vertex = local_vertex.applyMatrix4(hit_box_sword.matrix);
+            let direction_vector = global_vertex.sub(hit_box_sword.position);
+            let collision_raycaster = new THREE.Raycaster(origin_point, direction_vector.clone().normalize());
+            let collision_results = collision_raycaster.intersectObjects(test_array);
+            if (collision_results.length > 0 && collision_results[0].distance < direction_vector.length()) {
+                if (!create_wolf_timer) {
+                    create_wolves();
+                    create_wolf_timer = true;
+                    setTimeout(() => { create_wolf_timer = false; }, 1000);
+                }
+            }
+        }
+
+        //Setting up sword attack collision
         let sword_point = hit_box_sword.position.clone();
         for (let vertex_index = 0; vertex_index < hit_box_sword.geometry.vertices.length; vertex_index++) {
             let local_vertex = hit_box_sword.geometry.vertices[vertex_index].clone();
