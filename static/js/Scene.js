@@ -407,6 +407,15 @@ function animate() {
         let collision_results = collision_raycaster.intersectObjects(monster_list);
         if (collision_results.length > 0 && collision_results[0].distance < direction_vector.length()) {
             if (!damage_timer) {
+                if (player_health_group.children.length == 1) {
+                    setInterval(() => {
+                        blocker.style.backgroundColor = "black";
+                        blocker.style.display = 'block';
+                        instructions.style.display = '';
+                        instructions.innerHTML = 'YOUR DEAD<br>Press F5 to replay';
+                        controls.unlock();
+                    }, 0);
+                }
                 player_health_group.remove(player_health_group.children[player_health_group.children.length - 1]);
                 damage_timer = true;
                 setTimeout(() => { damage_timer = false; }, 1000);
