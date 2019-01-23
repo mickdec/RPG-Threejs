@@ -1,6 +1,7 @@
 //Declaring global objects
 let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health;
 
+let gravity = 150;
 let speed = 400;
 
 let objects = [];
@@ -34,7 +35,7 @@ const power_health_geometry = new THREE.SphereGeometry(1, 32, 32);
 const power_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
 function spawn_health(posz, posx, posy) {
-    let health_rng = Math.floor(Math.random() * 10);
+    let health_rng = Math.floor(Math.random() * (10 - 1) + 1);
     if (health_rng >= 5) {
         let health_power = new THREE.Mesh(power_health_geometry, power_health_material);
         health_power.position.z = posz;
@@ -58,7 +59,7 @@ const power_speed_geometry = new THREE.SphereGeometry(1, 32, 32);
 const power_speed_material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
 
 function spawn_speed(posz, posx, posy) {
-    let speed_rng = Math.floor(Math.random() * 10);
+    let speed_rng = Math.floor(Math.random() * (10 - 1) + 1);
     if (speed_rng >= 5) {
         let speed_power = new THREE.Mesh(power_speed_geometry, power_speed_material);
         speed_power.position.z = posz;
@@ -71,6 +72,29 @@ function spawn_speed(posz, posx, posy) {
         speed_power.add(speed_power.hit_box_speed);
         power_list.push(speed_power.hit_box_speed);
         scene.add(speed_power);
+    }
+}
+
+//Jump
+const hit_box_jump_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
+const hit_box_jump_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+const power_jump_geometry = new THREE.SphereGeometry(1, 32, 32);
+const power_jump_material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+function spawn_jump(posz, posx, posy) {
+    let jump_rng = Math.floor(Math.random() * (10 - 1) + 1);
+    if (jump_rng >= 5) {
+        let jump_power = new THREE.Mesh(power_jump_geometry, power_jump_material);
+        jump_power.position.z = posz;
+        jump_power.position.y = posy;
+        jump_power.position.x = posx;
+
+        //setting up the jump hit box
+        jump_power.hit_box_jump = new THREE.Mesh(hit_box_jump_geometry, hit_box_jump_material);
+        jump_power.hit_box_jump.name = "power_jump";
+        jump_power.add(jump_power.hit_box_jump);
+        power_list.push(jump_power.hit_box_jump);
+        scene.add(jump_power);
     }
 }
 
@@ -497,6 +521,7 @@ function animate() {
                     if (collision_results[0].object != null && collision_results[0].object.name.indexOf('wolf') != -1) {
                         spawn_health(collision_results[0].object.parent.position.z, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y + 1);
                         spawn_speed(collision_results[0].object.parent.position.z + 1, collision_results[0].object.parent.position.x + 1, collision_results[0].object.parent.position.y + 1);
+                        spawn_jump(collision_results[0].object.parent.position.z + 2, collision_results[0].object.parent.position.x + 2, collision_results[0].object.parent.position.y + 1);
 
                         let wolf_obj = collision_results[0].object.parent;
                         for (let h = 0; h < monster_list.length - 1; h++) {
@@ -529,28 +554,40 @@ function animate() {
                     let health_obj = collision_results[0].object.parent;
                     health_obj.remove(health_obj.children[0]);
                     scene.remove(health_obj);
-                    let heartShape = new THREE.Shape();
-                    heartShape.moveTo(25, 25);
-                    heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
-                    heartShape.bezierCurveTo(30, 0, 30, 35, 30, 35);
-                    heartShape.bezierCurveTo(30, 55, 10, 77, 25, 95);
-                    heartShape.bezierCurveTo(60, 77, 80, 55, 80, 35);
-                    heartShape.bezierCurveTo(80, 35, 80, 0, 50, 0);
-                    heartShape.bezierCurveTo(35, 0, 25, 25, 25, 25);
-                    let extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
-                    let player_health_geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
-                    let player_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-                    player_health = new THREE.Mesh(player_health_geometry, player_health_material);
-                    player_health.scale.set(0.02, 0.02, 0.02);
-                    player_health.rotation.z = 3.154;
-                    player_health.position.x = player_health_group.children.length;
-                    player_health_group.add(player_health);
+                    if (player_health_group.children.length <= 10) {
+                        let heartShape = new THREE.Shape();
+                        heartShape.moveTo(25, 25);
+                        heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
+                        heartShape.bezierCurveTo(30, 0, 30, 35, 30, 35);
+                        heartShape.bezierCurveTo(30, 55, 10, 77, 25, 95);
+                        heartShape.bezierCurveTo(60, 77, 80, 55, 80, 35);
+                        heartShape.bezierCurveTo(80, 35, 80, 0, 50, 0);
+                        heartShape.bezierCurveTo(35, 0, 25, 25, 25, 25);
+                        let extrudeSettings = { amount: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+                        let player_health_geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+                        let player_health_material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                        player_health = new THREE.Mesh(player_health_geometry, player_health_material);
+                        player_health.scale.set(0.02, 0.02, 0.02);
+                        player_health.rotation.z = 3.154;
+                        player_health.position.x = player_health_group.children.length;
+                        player_health_group.add(player_health);
+                    }
                 }
                 else if (collision_results[0].object.parent != null && collision_results[0].object.name.indexOf('power_speed') != -1) {
                     let speed_obj = collision_results[0].object.parent;
                     speed_obj.remove(speed_obj.children[0]);
                     scene.remove(speed_obj);
-                    speed += 10;
+                    if (speed <= 1200) {
+                        speed += 10;
+                    }
+                }
+                else if (collision_results[0].object.parent != null && collision_results[0].object.name.indexOf('power_jump') != -1) {
+                    let jump_obj = collision_results[0].object.parent;
+                    jump_obj.remove(jump_obj.children[0]);
+                    scene.remove(jump_obj);
+                    if (gravity >= 10) {
+                        gravity -= 10;
+                    }
                 }
                 power_timer = false;
             }
@@ -569,7 +606,7 @@ function animate() {
 
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
-        velocity.y -= 12 * 100.0 * delta;
+        velocity.y -= 12 * gravity * delta;
         direction.z = Number(move_forward) - Number(move_backward);
         direction.x = Number(move_left) - Number(move_right);
         direction.normalize();
