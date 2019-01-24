@@ -53,6 +53,18 @@
         text-align: center;
         cursor: pointer;
     }
+
+    #money {
+        padding-top: 10px;
+        padding-left: 10px;
+        font-size: 20px;
+        color: yellow;
+        position: absolute;
+        width: 300px;
+        height: 50px;
+        top: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 </style>
 
 <body>
@@ -69,10 +81,17 @@
             (Z, Q, S, D = Move, SPACE = Jump, MOUSE = Look around)
         </div>
     </div>
-    <div id="canva"></div>
+    <div id="canva">
+        <div id="money"></div>
+    </div>
+    <script>
+
+        document.getElementById("money").innerHTML = `0 Money`;
+    </script>
     <script src="static/js/three.min.js"></script>
     <script src="static/js/PointerLockControls.js"></script>
     <script src="static/js/ColladaLoader.js"></script>
+    <script src="static/js/GltfLoader.js"></script>
     <script src="static/js/WebGL.js"></script>
     <script src="static/js/Stats.js"></script>
     <script src="static/js/DatGui.js"></script>
