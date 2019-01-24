@@ -1,5 +1,5 @@
 //Declaring global objects
-let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health;
+let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant;
 
 let gravity = 150;
 let speed = 400;
@@ -280,6 +280,35 @@ function init() {
         instructions.style.display = '';
     });
 
+    //Declaring merchant place
+    let pass_geometry = new THREE.CubeGeometry(1, 10, 20, 1, 1, 1);
+    let pass_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+    pass = new THREE.Mesh(pass_geometry, pass_material);
+    pass2 = new THREE.Mesh(pass_geometry, pass_material);
+    pass2.position.y = 0;
+    pass2.position.x = 20;
+    pass2.position.z = 0;
+    pass3 = new THREE.Mesh(pass_geometry, pass_material);
+    pass3.rotation.y = 1.5;
+    pass3.position.x = 10;
+    pass3.position.z = -10;
+
+    let pass_geometry2 = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
+    merchant = new THREE.Mesh(pass_geometry2, pass_material);
+    merchant.position.x = 10;
+    merchant.position.z = 2.5;
+
+    let merchant_place = new THREE.Group();
+    merchant_place.add(pass, pass2, pass3, merchant);
+
+    merchant_place.position.y = 5;
+    merchant_place.position.x = 30;
+    merchant_place.position.z = -30;
+    merchant_place.rotation.y = 5.5;
+
+    scene.add(merchant_place);
+
+
     //Declaring hit box of the player, it's a global object
     let hit_box_player_geometry = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
     let hit_box_player_material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
@@ -441,18 +470,22 @@ function init() {
 
     //Declaring test hit box
     const hit_box_test_geometry = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
-    const hit_box_test_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+    const hit_box_test_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: 0 });
     let hit_box_test = new THREE.Mesh(hit_box_test_geometry, hit_box_test_material);
 
     const test_texture = new THREE.TextureLoader().load("static/textures/rock.jpg");
     const test_material = new THREE.MeshBasicMaterial({ map: test_texture, dithering: true });
     let test = new THREE.Mesh(hit_box_test_geometry, test_material);
 
+    hit_box_test.position.y = 5;
+    hit_box_test.position.x = 0;
+    hit_box_test.position.z = -30;
+
     test.position.y = 5;
     test.position.x = 0;
     test.position.z = -30;
     test_array.push(hit_box_test);
-    scene.add(test);
+    scene.add(hit_box_test, test);
 
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -472,6 +505,29 @@ function onWindowResize() {
 //Declaring the whole global animation for the scene
 function animate() {
     requestAnimationFrame(animate);
+
+    //Declaration attack sword
+    document.addEventListener('click', () => {
+        if (!attack_timer) {
+            attack_timer = true;
+            let hit_box_sword_geometry = new THREE.CubeGeometry(2, 10, 25, 1, 1, 1);
+            let hit_box_sword_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: true });
+            hit_box_sword = new THREE.Mesh(hit_box_sword_geometry, hit_box_sword_material);
+            hit_box_sword.position.x = controls.getObject().position.x;
+            hit_box_sword.position.y = controls.getObject().position.y;
+            hit_box_sword.position.z = controls.getObject().position.z;
+            hit_box_sword.rotation.x = controls.getObject().rotation.x;
+            hit_box_sword.rotation.y = controls.getObject().rotation.y;
+            hit_box_sword.rotation.z = controls.getObject().rotation.z;
+            scene.add(hit_box_sword);
+            setTimeout(() => {
+                attack_timer = false;
+                hit_box_sword.position.set(0, -100, 0);
+                scene.remove(hit_box_sword);
+            }, 400)
+        }
+
+    })
 
     //Setting up the collision detection process
     let origin_point = controls.getObject().position.clone();
@@ -501,37 +557,16 @@ function animate() {
         }
     }
 
-    document.addEventListener('click', () => {
-        if (!attack_timer) {
-            attack_timer = true;
-            let hit_box_sword_geometry = new THREE.CubeGeometry(5, 20, 30, 1, 1, 1);
-            let hit_box_sword_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: true });
-            hit_box_sword = new THREE.Mesh(hit_box_sword_geometry, hit_box_sword_material);
-            hit_box_sword.position.x = controls.getObject().position.x;
-            hit_box_sword.position.y = controls.getObject().position.y;
-            hit_box_sword.position.z = controls.getObject().position.z;
-            hit_box_sword.rotation.x = controls.getObject().rotation.x;
-            hit_box_sword.rotation.y = controls.getObject().rotation.y;
-            hit_box_sword.rotation.z = controls.getObject().rotation.z;
-            scene.add(hit_box_sword);
-            setTimeout(() => {
-                attack_timer = false;
-                hit_box_sword.position.set(0, -100, 0);
-                scene.remove(hit_box_sword);
-            }, 400)
-        }
-
-    })
-
     //Setting up monster creation collision event
     if (hit_box_sword != null && hit_box_sword.position.y != -100) {
+        let sword_point = hit_box_sword.position.clone();
         for (let vertex_index = 0; vertex_index < hit_box_sword.geometry.vertices.length; vertex_index++) {
             let local_vertex = hit_box_sword.geometry.vertices[vertex_index].clone();
             let global_vertex = local_vertex.applyMatrix4(hit_box_sword.matrix);
             let direction_vector = global_vertex.sub(hit_box_sword.position);
-            let collision_raycaster = new THREE.Raycaster(origin_point, direction_vector.clone().normalize());
+            let collision_raycaster = new THREE.Raycaster(sword_point, direction_vector.clone().normalize());
             let collision_results = collision_raycaster.intersectObjects(test_array);
-            if (collision_results.length > 0 && collision_results[0].distance < direction_vector.length()) {
+            if (collision_results.length > 0 && direction_vector.length() < 16 && collision_results[0].distance < direction_vector.length()) {
                 if (!create_wolf_timer) {
                     create_wolves();
                     create_wolf_timer = true;
@@ -541,7 +576,6 @@ function animate() {
         }
 
         //Setting up sword attack collision
-        let sword_point = hit_box_sword.position.clone();
         for (let vertex_index = 0; vertex_index < hit_box_sword.geometry.vertices.length; vertex_index++) {
             let local_vertex = hit_box_sword.geometry.vertices[vertex_index].clone();
             let global_vertex = local_vertex.applyMatrix4(hit_box_sword.matrix);
