@@ -1,14 +1,14 @@
 //Declaring global objects
-let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant, hit_box_sword;
+let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant_hit_box, hit_box_sword, spot_light, night_sound, listener, spawner;
 
-let gravity = 150;
+let gravity = 150;//150
 let speed = 400;
 let money = 0;
+let night_count = 0;
 
-let objects = [];
+let floor_boss_hitbox = [];
 let monster_list = [];
 let power_list = [];
-let test_array = [];
 let market_list = [];
 
 let move_forward = false;
@@ -22,6 +22,8 @@ let attack_timer = false;
 let create_wolf_timer = false;
 let dead_wolf_timer = false;
 let buying_action = false;
+let night_day = false;
+let wolves_spawned = false;
 
 let prev_time = performance.now();
 let velocity = new THREE.Vector3();
@@ -153,8 +155,21 @@ function create_wolves() {
     for (let i = 0; i < 2; i++) {
         //Loading the model
         let wolf_loader = new THREE.GLTFLoader();
-        wolf_loader.load('static/models/monster/scene.gltf', function (collada) {
-            var monster = collada.scene;
+        wolf_loader.load('static/models/monster/scene.gltf', function (gltf) {
+            var monster = gltf.scene;
+
+            monster.traverse(function (node) {
+                if (node instanceof THREE.Mesh) {
+                    node.castShadow = true;
+                } else {
+                    node.traverse(function (node2) {
+                        if (node2 instanceof THREE.Mesh) {
+                            node2.castShadow = true;
+                        }
+                    });
+                }
+            });
+
             monster.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
             monster.position.y = 7;
             monster.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
@@ -170,7 +185,6 @@ function create_wolves() {
             //setting up the random wolf size
             let size = (Math.floor(Math.random() * 0.05) + 0.2);
             monster.scale.set(size, size, size);
-            monster.rotation.x -= 0.04;
             monster.rotation.y -= Math.random() * -6.25;
 
             //setting up all the process for the wolf movement pattern
@@ -215,7 +229,6 @@ function create_wolves() {
                     rotate(monster);
                 }
             }, 0);
-            console.log(monster)
             scene.add(monster);
         });
     }
@@ -232,7 +245,7 @@ function init() {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
     //Declaring listener for the camera sounds
-    let listener = new THREE.AudioListener();
+    listener = new THREE.AudioListener();
     camera.add(listener);
 
     //Declaring the global ambiant sound
@@ -263,21 +276,67 @@ function init() {
     scene.add(skybox);
 
     //Declaring the spotlight
-    var spot_light = new THREE.SpotLight(0xffffff);
-    spot_light.position.set(0, 200, 0);
+    spot_light = new THREE.SpotLight(0xffffff);
+    spot_light.position.set(250, 100, 0);
+    spot_light.angle = 1.5;
+    spot_light.penumbra = 1;
+    spot_light.decay = 2;
+    spot_light.distance = 4000;
+    spot_light.intensity = 2;
+
     spot_light.castShadow = true;
     spot_light.shadow.mapSize.width = 1024;
     spot_light.shadow.mapSize.height = 1024;
     spot_light.shadow.camera.near = 500;
     spot_light.shadow.camera.far = 4000;
-    spot_light.shadow.camera.fov = 30;
+    spot_light.shadow.camera.fov = 100;
 
-    scene.add(spot_light);
+    spot_light_moon = new THREE.SpotLight(0xffffff);
+    spot_light_moon.position.set(100, 300, 0);
+    spot_light_moon.angle = 1.5;
+    spot_light_moon.decay = 2;
+    spot_light_moon.distance = 4000;
+    spot_light_moon.intensity = 0.05;
 
-    var light = new THREE.PointLight(0xffffff, 1, 100);
-    light.position.set(0, 10, 0);
-    light.castShadow = true;            // default false
-    scene.add(light);
+    spot_light_moon.castShadow = true;
+
+    var light = new THREE.PointLight(0xff4500, 2, 300);
+    light.castShadow = true;
+    light.position.set(5, 5, 0);
+
+    let sound_bonfire = new THREE.PositionalAudio(listener);
+    let audioLoader_sound_bonfire = new THREE.AudioLoader();
+    audioLoader_sound_bonfire.load('static/sounds/bonfire.ogg', function (buffer) {
+        sound_bonfire.setBuffer(buffer);
+        sound_bonfire.setRefDistance(20);
+        sound_bonfire.setLoop(true);
+        sound_bonfire.play();
+    });
+
+    let bonfire_loader = new THREE.GLTFLoader();
+    bonfire_loader.load('static/models/bonfire/scene.gltf', function (gltf) {
+        var bonfire = gltf.scene;
+
+        bonfire.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                node.castShadow = false;
+            } else {
+                node.traverse(function (node2) {
+                    if (node2 instanceof THREE.Mesh) {
+                        node2.castShadow = false;
+                    }
+                });
+            }
+        });
+
+        bonfire.scale.set(1.5, 1.5, 1.5);
+        bonfire.position.set(5, 2, 0);
+
+        bonfire.add(sound_bonfire);
+        scene.add(bonfire);
+    });
+
+    scene.add(spot_light, spot_light_moon, light);
 
     //Declaring controls, controls is declaring as a global object
     controls = new THREE.PointerLockControls(camera);
@@ -295,47 +354,39 @@ function init() {
         instructions.style.display = '';
     });
 
-    // //Declaring merchant place
-    // let pass_geometry = new THREE.CubeGeometry(1, 10, 20, 1, 1, 1);
-    let pass_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-    // pass = new THREE.Mesh(pass_geometry, pass_material);
-    // pass2 = new THREE.Mesh(pass_geometry, pass_material);
-    // pass2.position.y = 0;
-    // pass2.position.x = 20;
-    // pass2.position.z = 0;
-    // pass3 = new THREE.Mesh(pass_geometry, pass_material);
-    // pass3.rotation.y = 1.5;
-    // pass3.position.x = 10;
-    // pass3.position.z = -10;
+    //Declaring merchant place
+    let seller_loader = new THREE.GLTFLoader();
+    seller_loader.load('static/models/seller/scene.gltf', function (gltf) {
+        var seller = gltf.scene;
 
-    // market_list.push(pass, pass2, pass3);
+        seller.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                node.castShadow = false;
+            } else {
+                node.traverse(function (node2) {
+                    if (node2 instanceof THREE.Mesh) {
+                        node2.castShadow = false;
+                    }
+                });
+            }
+        });
 
-    let pass_geometry2 = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
-    merchant = new THREE.Mesh(pass_geometry2, pass_material);
-    merchant.position.x = 10;
-    merchant.position.z = 2.5;
+        seller.scale.set(0.15, 0.15, 0.15);
 
-    // const wall_texture = new THREE.TextureLoader().load("static/textures/grass.jpg");
-    // let wall_material = new THREE.MeshBasicMaterial({ map: wall_texture, dithering: true });
-    // wall = new THREE.Mesh(pass_geometry, wall_material);
-    // wall2 = new THREE.Mesh(pass_geometry, wall_material);
-    // wall3 = new THREE.Mesh(pass_geometry, wall_material);
-    // wall2.position.y = 0;
-    // wall2.position.x = 20;
-    // wall2.position.z = 0;
-    // wall3.rotation.y = 1.5;
-    // wall3.position.x = 10;
-    // wall3.position.z = -10;
+        let pass_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: true });
+        let pass_geometry2 = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
+        merchant_hit_box = new THREE.Mesh(pass_geometry2, pass_material);
 
-    let merchant_place = new THREE.Group();
-    merchant_place.add(merchant);
+        let merchant_place = new THREE.Group();
+        merchant_place.add(seller, merchant_hit_box);
 
-    merchant_place.position.y = 5;
-    merchant_place.position.x = 30;
-    merchant_place.position.z = -30;
-    merchant_place.rotation.y = 5.5;
+        merchant_place.position.y = 1;
+        merchant_place.position.x = 30;
+        merchant_place.position.z = -10;
+        merchant_place.rotation.y = 5.2;
 
-    scene.add(merchant_place);
+        scene.add(merchant_place);
+    });
 
     //Declaring hit box of the player, it's a global object
     let hit_box_player_geometry = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
@@ -477,7 +528,7 @@ function init() {
     });
 
     //Declaring the floor
-    let floor_geometry = new THREE.PlaneBufferGeometry(500, 500, 20, 20);
+    let floor_geometry = new THREE.PlaneBufferGeometry(800, 800, 60, 60);
     floor_geometry.rotateX(- Math.PI / 2);
     let vertex_position = floor_geometry.attributes.position;
     for (var i = 0, l = vertex_position.count; i < l; i++) {
@@ -499,26 +550,28 @@ function init() {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    //Declaring test hit box
-    const hit_box_test_geometry = new THREE.CubeGeometry(10, 10, 10, 1, 1, 1);
-    const hit_box_test_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: 0 });
-    let hit_box_test = new THREE.Mesh(hit_box_test_geometry, hit_box_test_material);
+    //Declaring boss floor
+    const floor_boss_geometry = new THREE.BoxBufferGeometry(500, 15, 200);
+    const floor_boss_texture = new THREE.TextureLoader().load("static/textures/rock.jpg");
+    floor_boss_texture.wrapS = floor_boss_texture.wrapT = THREE.RepeatWrapping;
+    floor_boss_texture.repeat.set(2, 2);
+    const floor_boss_material = new THREE.MeshPhongMaterial({ map: floor_boss_texture, dithering: true });
+    let floor_boss = new THREE.Mesh(floor_boss_geometry, floor_boss_material);
+    floor_boss.position.x = 0;
+    floor_boss.position.y = 100;
+    floor_boss.position.z = 250;
+    floor_boss.castShadow = true;
+    floor_boss.receiveShadow = true;
 
-    const test_texture = new THREE.TextureLoader().load("static/textures/rock.jpg");
-    const test_material = new THREE.MeshBasicMaterial({ map: test_texture, dithering: true });
-    let test = new THREE.Mesh(hit_box_test_geometry, test_material);
+    var light = new THREE.PointLight(0xff0000, 20, 100);
+    light.position.x = 0;
+    light.position.y = 110;
+    light.position.z = 250;
+    light.castShadow = true;
+    scene.add(light);
 
-    hit_box_test.position.y = 5;
-    hit_box_test.position.x = 0;
-    hit_box_test.position.z = -30;
-
-    test.position.y = 5;
-    test.position.x = 0;
-    test.position.z = -30;
-    test_array.push(hit_box_test);
-    test.castShadow = true;
-    test.receiveShadow = false;
-    scene.add(hit_box_test, test);
+    scene.add(floor_boss);
+    floor_boss_hitbox.push(floor_boss);
 
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -537,9 +590,97 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+//Declaring trees spawn
+for (let p = 0; p < 20; p++) {
+    let tree_loader = new THREE.GLTFLoader();
+    tree_loader.load('static/models/tree/scene.gltf', function (gltf) {
+        var tree = gltf.scene;
+
+        tree.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                node.castShadow = true;
+            } else {
+                node.traverse(function (node2) {
+                    if (node2 instanceof THREE.Mesh) {
+                        node2.castShadow = true;
+                    }
+                });
+            }
+        });
+
+        let tree_size = Math.random() * (0.15 - 0.05) + 0.05;
+        tree.scale.set(tree_size, tree_size, tree_size);
+
+        tree.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
+        tree.position.y = 0;
+        tree.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
+
+        scene.add(tree);
+    });
+}
+
+//Declaring night coming sound
+night_sound = new THREE.Audio(listener);
+let night_sound_loader = new THREE.AudioLoader();
+night_sound_loader.load('static/sounds/wolf_howl.ogg', function (buffer) {
+    night_sound.setBuffer(buffer);
+    night_sound.setVolume(0.5);
+});
+
+//Declaring day coming sound
+day_sound = new THREE.Audio(listener);
+let day_sound_loader = new THREE.AudioLoader();
+day_sound_loader.load('static/sounds/day.ogg', function (buffer) {
+    day_sound.setBuffer(buffer);
+    day_sound.setVolume(0.5);
+});
+
 //Declaring the whole global animation for the scene
 function animate() {
     requestAnimationFrame(animate);
+
+    if (!night_day) {
+        spot_light.position.y -= 0.05;
+        spot_light.position.x += 1;
+        skybox.material.forEach(material => {
+            if (material.opacity >= 0) {
+                material.opacity -= 0.0005;
+                material.transparent = true;
+            }
+        });
+        if (spot_light.position.y <= 0.5 && spot_light.position.y >= -0.5) {
+            if (!wolves_spawned) {
+                wolves_spawned = true;
+                create_wolves();
+                spawner = setInterval(() => {
+                    create_wolves();
+                }, 10000 - night_count);
+                night_sound.play();
+                night_count += 100;
+            }
+        }
+        if (spot_light.position.y <= -60) {
+            night_day = true;
+            spot_light.position.x = -250;
+            spot_light.position.y = 0;
+            clearInterval(spawner);
+            spawner = setInterval(() => { }, 100000);
+            day_sound.play();
+        }
+    } else {
+        skybox.material.forEach(material => {
+            if (material.opacity <= 1) {
+                material.opacity += 0.0015;
+                material.transparent = true;
+            }
+        });
+        spot_light.position.y += 0.1;
+        spot_light.position.x += 1;
+        if (spot_light.position.x >= 250) {
+            night_day = false;
+            wolves_spawned = false;
+        }
+    }
 
     //Declaration attack sword
     document.addEventListener('click', () => {
@@ -602,7 +743,7 @@ function animate() {
             let global_vertex = local_vertex.applyMatrix4(hit_box_sword.matrix);
             let direction_vector = global_vertex.sub(hit_box_sword.position);
             let collision_raycaster = new THREE.Raycaster(sword_point, direction_vector.clone().normalize());
-            let collision_results = collision_raycaster.intersectObject(merchant);
+            let collision_results = collision_raycaster.intersectObject(merchant_hit_box);
             if (collision_results.length > 0 && direction_vector.length() < 16 && collision_results[0].distance < direction_vector.length()) {
                 if (!buying_action) {
                     buying_action = true;
@@ -613,22 +754,6 @@ function animate() {
                         spawn_jump(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 0.5);
                     }
                     setTimeout(() => { buying_action = false; }, 500);
-                }
-            }
-        }
-
-        //Setting up monster creation collision event
-        for (let vertex_index = 0; vertex_index < hit_box_sword.geometry.vertices.length; vertex_index++) {
-            let local_vertex = hit_box_sword.geometry.vertices[vertex_index].clone();
-            let global_vertex = local_vertex.applyMatrix4(hit_box_sword.matrix);
-            let direction_vector = global_vertex.sub(hit_box_sword.position);
-            let collision_raycaster = new THREE.Raycaster(sword_point, direction_vector.clone().normalize());
-            let collision_results = collision_raycaster.intersectObjects(test_array);
-            if (collision_results.length > 0 && direction_vector.length() < 16 && collision_results[0].distance < direction_vector.length()) {
-                if (!create_wolf_timer) {
-                    create_wolves();
-                    create_wolf_timer = true;
-                    setTimeout(() => { create_wolf_timer = false; }, 1000);
                 }
             }
         }
@@ -715,7 +840,7 @@ function animate() {
                     let jump_obj = collision_results[0].object.parent;
                     jump_obj.remove(jump_obj.children[0]);
                     scene.remove(jump_obj);
-                    if (gravity >= 10) {
+                    if (gravity >= 30) {
                         gravity -= 10;
                     }
                 }
@@ -736,7 +861,7 @@ function animate() {
         controls_raycaster.ray.origin.copy(controls.getObject().position);
         controls_raycaster.ray.origin.y -= 10;
 
-        let intersections = controls_raycaster.intersectObjects(objects);
+        let intersections = controls_raycaster.intersectObjects(floor_boss_hitbox);
         let on_object = intersections.length > 0;
         let time = performance.now();
         let delta = (time - prev_time) / 1000;
