@@ -1,6 +1,6 @@
 //Declaring global objects
 let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant_hit_box,
-    hit_box_sword, spot_light_sun, spot_light_moon, night_sound, listener, spawner;
+    hit_box_sword, spot_light_sun, spot_light_moon, night_sound, listener, spawner, light_group;
 
 let gravity = 150;
 let speed = 400;
@@ -15,13 +15,16 @@ let hearth_rng = 70;
 let money_rng = 95;
 let speed_rng = 50;
 let jump_rng = 10;
-let boss_hit_point = 10;
+let boss_hit_point = 5;
+let mv_luciolle_y = 0;
+let mv_luciolle_x = 0;
 
 let floor_boss_hitbox = [];
 let monster_list = [];
 let objects_monsters_list = []
 let power_list = [];
 let market_list = [];
+let luciolles_group = [];
 
 let move_forward = false;
 let move_backward = false;
@@ -248,20 +251,65 @@ function init() {
 
     //Declaring the moon
     spot_light_moon = new THREE.SpotLight(0xffffff);
-    spot_light_moon.position.set(100, 300, 0);
-    spot_light_moon.angle = 1.5;
+    spot_light_moon.position.set(0, 500, 0);
     spot_light_moon.decay = 2;
+    spot_light_sun.penumbra = 1;
     spot_light_moon.distance = 4000;
-    spot_light_moon.intensity = 0.05;
-
+    spot_light_moon.intensity = 0.3;
     spot_light_moon.castShadow = true;
+    spot_light_sun.shadow.mapSize.width = 1024;
+    spot_light_sun.shadow.mapSize.height = 1024;
+    spot_light_sun.shadow.camera.near = 500;
+    spot_light_sun.shadow.camera.far = 4000;
+    spot_light_sun.shadow.camera.fov = 100;
 
     //Declaring the bonfire light
-    let light = new THREE.PointLight(0xff4500, 2, 300);
+    let light = new THREE.PointLight(0xff4500, 20, 100);
     light.castShadow = true;
     light.position.set(5, 5, 0);
 
-    scene.add(spot_light_sun, spot_light_moon, light);
+    //Declaring blue luciolles
+    const luciolle_geometry = new THREE.SphereGeometry(0.1, 10, 10);
+    const luciolle_material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    light_group = new THREE.Group();
+    for (let b = 0; b < 2; b++) {
+        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+        luciolle_light.castShadow = true;
+        luciolle.add(luciolle_light);
+        luciolles_group.push(luciolle);
+        luciolle.position.set(Math.random() * 250, 5, Math.random() * 250);
+        light_group.add(luciolle)
+    }
+    for (let b = 0; b < 2; b++) {
+        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+        luciolle_light.castShadow = true;
+        luciolle.add(luciolle_light);
+        luciolles_group.push(luciolle);
+        luciolle.position.set(Math.random() * -250, 5, Math.random() * 250);
+        light_group.add(luciolle)
+    }
+    for (let b = 0; b < 2; b++) {
+        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+        luciolle_light.castShadow = true;
+        luciolle.add(luciolle_light);
+        luciolles_group.push(luciolle);
+        luciolle.position.set(Math.random() * 250, 5, Math.random() * -250);
+        light_group.add(luciolle)
+    }
+    for (let b = 0; b < 2; b++) {
+        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+        luciolle_light.castShadow = true;
+        luciolle.add(luciolle_light);
+        luciolles_group.push(luciolle);
+        luciolle.position.set(Math.random() * -250, 5, Math.random() * -250);
+        light_group.add(luciolle)
+    }
+
+    scene.add(spot_light_sun, spot_light_moon, light, light_group);
 
     //Declaring the bonfire sound
     let sound_bonfire = new THREE.PositionalAudio(listener);
@@ -516,7 +564,7 @@ function init() {
     const floor_boss_material = new THREE.MeshPhongMaterial({ map: floor_boss_texture, dithering: true });
     let floor_boss = new THREE.Mesh(floor_boss_geometry, floor_boss_material);
     floor_boss.position.set(0, 200, 0);
-    floor_boss.castShadow = true;
+    floor_boss.castShadow = false;
     floor_boss.receiveShadow = true;
 
     let boss_light = new THREE.PointLight(0xffffff, 20, 100);
@@ -621,7 +669,7 @@ function onWindowResize() {
 }
 
 //Declaring trees spawn
-for (let p = 0; p < 20; p++) {
+for (let p = 0; p < 12; p++) {
     let tree_loader = new THREE.GLTFLoader();
     tree_loader.load('static/models/tree/scene.gltf', function (gltf) {
         let tree = gltf.scene;
@@ -641,11 +689,38 @@ for (let p = 0; p < 20; p++) {
         let tree_size = Math.random() * (0.15 - 0.05) + 0.05;
         tree.scale.set(tree_size, tree_size, tree_size);
 
-        tree.position.set(Math.floor(Math.random() * (250 - (-250)) + (-250)), 0, Math.floor(Math.random() * (250 - (-250)) + (-250)));
+        tree.position.set(Math.floor(Math.random() * 250), 0, Math.floor(Math.random() * 250));
 
         scene.add(tree);
     });
 }
+setTimeout(() => {
+    for (let p = 0; p < 12; p++) {
+        let tree_loader = new THREE.GLTFLoader();
+        tree_loader.load('static/models/tree/scene.gltf', function (gltf) {
+            let tree = gltf.scene;
+
+            tree.traverse(function (node) {
+                if (node instanceof THREE.Mesh) {
+                    node.castShadow = true;
+                } else {
+                    node.traverse(function (node2) {
+                        if (node2 instanceof THREE.Mesh) {
+                            node2.castShadow = true;
+                        }
+                    });
+                }
+            });
+
+            let tree_size = Math.random() * (0.15 - 0.05) + 0.05;
+            tree.scale.set(tree_size, tree_size, tree_size);
+
+            tree.position.set(Math.floor(Math.random() * (125 - (-125)) + (-110)), 0, Math.floor(Math.random() * (125 - (-125)) + (-110)));
+
+            scene.add(tree);
+        });
+    }
+}, 3000);
 
 //Declaring night coming sound
 night_sound = new THREE.Audio(listener);
@@ -667,16 +742,49 @@ day_sound_loader.load('static/sounds/day.ogg', function (buffer) {
 function animate() {
     requestAnimationFrame(animate);
 
+    //Night and day cycle declaration
+    mv_luciolle_x++;
+    if (mv_luciolle_x <= 1000) {
+        luciolles_group.forEach(luciolle => {
+            luciolle.position.x += 0.1;
+        })
+    } else if (mv_luciolle_x > 1000) {
+        luciolles_group.forEach(luciolle => {
+            luciolle.position.x -= 0.1;
+        })
+        if (mv_luciolle_x >= 2000) {
+            mv_luciolle_x = 0;
+        }
+    }
+    mv_luciolle_y++;
+    if (mv_luciolle_y <= 100) {
+        luciolles_group.forEach(luciolle => {
+            luciolle.position.y += 0.1;
+            luciolle.children[0].distance += 1;
+        })
+    } else if (mv_luciolle_y > 100) {
+        luciolles_group.forEach(luciolle => {
+            luciolle.position.y -= 0.1;
+            luciolle.children[0].distance -= 1;
+        })
+        if (mv_luciolle_y >= 200) {
+            mv_luciolle_y = 0;
+        }
+    }
+
     if (!night_day) {
         spot_light_sun.position.y -= 0.05;
         spot_light_sun.position.x += 1;
+        luciolles_group.forEach(luciolle => {
+            luciolle.children[0].intensity += 0.005;
+        })
         skybox.material.forEach(material => {
             if (material.opacity >= 0) {
-                material.opacity -= 0.0005;
+                material.opacity -= 0.001;
                 material.transparent = true;
             }
         });
-        if (spot_light_sun.position.y <= 0.5 && spot_light_sun.position.y >= -0.5) {
+        if (spot_light_sun.position.y <= 1 && spot_light_sun.position.y >= 0) {
             if (!monster_spawned) {
                 monster_spawned = true;
                 create_monster();
@@ -687,7 +795,7 @@ function animate() {
                 night_count += 100;
             }
         }
-        if (spot_light_sun.position.y <= -60) {
+        if (spot_light_sun.position.y <= -10) {
             night_day = true;
             spot_light_sun.position.x = -250;
             spot_light_sun.position.y = 0;
@@ -698,15 +806,17 @@ function animate() {
     } else {
         skybox.material.forEach(material => {
             if (material.opacity <= 1) {
-                material.opacity += 0.0015;
+                material.opacity += 0.001;
                 material.transparent = true;
             }
         });
+        luciolles_group.forEach(luciolle => {
+            luciolle.children[0].intensity -= 0.005;
+        })
         spot_light_sun.position.y += 0.1;
         spot_light_sun.position.x += 1;
         if (spot_light_sun.position.x >= 250) {
-            
-            objects_monsters_list.forEach(monster=>{
+            objects_monsters_list.forEach(monster => {
                 for (let h = 0; h < monster_list.length; h++) {
                     if (monster_list[h] != null) {
                         if (monster_list[h] == monster.children[1]) {
@@ -722,7 +832,9 @@ function animate() {
                 monster.monster_die_sound.play();
                 scene.remove(monster);
             })
-
+            luciolles_group.forEach(luciolle => {
+                luciolle.children[0].intensity = 0;
+            })
             night_day = false;
             monster_spawned = false;
         }
@@ -776,7 +888,6 @@ function animate() {
             }
         }
     }
-
 
     if (hit_box_sword != null && hit_box_sword.position.y != -100) {
         let sword_point = hit_box_sword.position.clone();
@@ -884,7 +995,7 @@ function animate() {
                                     }
                                 }
                                 scene.remove(monster_obj);
-                                setTimeout(()=>{
+                                setTimeout(() => {
                                     setInterval(() => {
                                         blocker.style.backgroundColor = "black";
                                         blocker.style.display = 'block';
@@ -892,7 +1003,7 @@ function animate() {
                                         instructions.innerHTML = 'YOU WIN THE T-REX !<br>Press F5 to replay';
                                         controls.unlock();
                                     }, 0);
-                                },2000)
+                                }, 2000)
                             }, 3000);
                         }
                     }
