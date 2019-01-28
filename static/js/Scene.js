@@ -760,7 +760,7 @@ function animate() {
                                 monster_obj.remove(monster_obj.children[d]);
                             }
                         }
-                        wolf_obj.monster_die_sound.play();
+                        monster_obj.monster_die_sound.play();
                         scene.remove(monster_obj);
                     }
                     setTimeout(() => {
