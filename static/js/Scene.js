@@ -36,7 +36,7 @@ let direction = new THREE.Vector3();
 let vertex = new THREE.Vector3();
 let color = new THREE.Color();
 
-const hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0, transparent: true });
+let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.0, transparent: true });
 
 //Declaring the power objects function
 const hit_box_power_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
@@ -48,7 +48,7 @@ function spawn_power(posz, posx, posy, type, color) {
     power.position.set(posx, posy, posz);
 
     //setting up the power hit box
-    power.hit_box_power = new THREE.Mesh(hit_box_power_geometry, power_material);
+    power.hit_box_power = new THREE.Mesh(hit_box_power_geometry, hit_box_material);
     power.hit_box_power.name = type;
 
     power.add(power.hit_box_power);
