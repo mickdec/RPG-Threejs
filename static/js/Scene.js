@@ -15,9 +15,11 @@ let hearth_rng = 70;
 let money_rng = 95;
 let speed_rng = 50;
 let jump_rng = 10;
+let boss_hit_point = 10;
 
 let floor_boss_hitbox = [];
 let monster_list = [];
+let objects_monsters_list = []
 let power_list = [];
 let market_list = [];
 
@@ -181,6 +183,7 @@ function create_monster() {
             });
             monster.add(monster.monster_die_sound);
 
+            objects_monsters_list.push(monster);
             scene.add(monster);
         });
     }
@@ -506,50 +509,99 @@ function init() {
     scene.add(floor);
 
     //Declaring boss floor
-    const floor_boss_geometry = new THREE.BoxBufferGeometry(500, 15, 200);
+    const floor_boss_geometry = new THREE.BoxBufferGeometry(250, 15, 200);
     const floor_boss_texture = new THREE.TextureLoader().load("static/textures/rock.jpg");
     floor_boss_texture.wrapS = floor_boss_texture.wrapT = THREE.RepeatWrapping;
     floor_boss_texture.repeat.set(2, 2);
     const floor_boss_material = new THREE.MeshPhongMaterial({ map: floor_boss_texture, dithering: true });
     let floor_boss = new THREE.Mesh(floor_boss_geometry, floor_boss_material);
-    floor_boss.position.x = 0;
-    floor_boss.position.y = 100;
-    floor_boss.position.z = 250;
+    floor_boss.position.set(0, 200, 0);
     floor_boss.castShadow = true;
     floor_boss.receiveShadow = true;
 
-    let boss_light = new THREE.PointLight(0xff0000, 20, 100);
-    boss_light.position.x = 0;
-    boss_light.position.y = 110;
-    boss_light.position.z = 250;
+    let boss_light = new THREE.PointLight(0xffffff, 20, 100);
+    boss_light.position.set(0, 210, 0);
     boss_light.castShadow = true;
     scene.add(boss_light);
 
     scene.add(floor_boss);
     floor_boss_hitbox.push(floor_boss);
 
-    // //Declaring boss
-    // let boss_loader = new THREE.GLTFLoader();
-    // boss_loader.load('static/models/boss/scene.gltf', function (gltf) {
-    //     let boss = gltf.scene;
+    //Declaring boss
+    const hit_box_boss_geometry = new THREE.CubeGeometry(20, 20, 20, 3, 3, 3);
+    let boss_loader = new THREE.GLTFLoader();
+    boss_loader.load('static/models/boss/scene.gltf', function (gltf) {
+        let boss = gltf.scene;
 
-    //     boss.traverse(function (node) {
-    //         if (node instanceof THREE.Mesh) {
-    //             node.castShadow = true;
-    //         } else {
-    //             node.traverse(function (node2) {
-    //                 if (node2 instanceof THREE.Mesh) {
-    //                     node2.castShadow = true;
-    //                 }
-    //             });
-    //         }
-    //     });
+        boss.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                node.castShadow = true;
+            } else {
+                node.traverse(function (node2) {
+                    if (node2 instanceof THREE.Mesh) {
+                        node2.castShadow = true;
+                    }
+                });
+            }
+        });
 
-    //     boss.scale.set(2, 2, 2);
-    //     boss.position.set(5,5,5);
+        boss.scale.set(5, 5, 5);
+        boss.position.set(0, 210, 0);
 
-    //     scene.add(boss);
-    // });
+        //setting up all the process for the boss movement pattern
+        boss.initrotate = false;
+        boss.rotating_loop = 0;
+        boss.walking_distance = 0;
+        setInterval(() => {
+            boss.rotating_loop++;
+            if (boss.rotating_loop < 100) {
+                boss.rotation.x += 0.002;
+            } else {
+                if (boss.rotating_loop == 200) {
+                    boss.rotating_loop = 0;
+                }
+                boss.rotation.x -= 0.002;
+            }
+            boss.walking_distance = boss.walking_distance + 1;
+            if (boss.walking_distance < 1000 && !boss.initrotate) {
+                if (boss.rotation.y >= 5.43875 || boss.rotation.y <= 0.78125) {
+                    if (boss.position.z >= 100) {
+                        rotate(boss);
+                    }
+                    boss.position.z += 0.2;
+                } else if (boss.rotation.y >= 0.78125 && boss.rotation.y <= 2.34375) {
+                    if (boss.position.x >= 50 || boss.position.z <= -50) {
+                        rotate(boss);
+                    }
+                    boss.position.x += 0.1;
+                    boss.position.z -= 0.1;
+                } else if (boss.rotation.y >= 2.34375 && boss.rotation.y <= 3.90625) {
+                    if (boss.position.z <= -100) {
+                        rotate(boss);
+                    }
+                    boss.position.z -= 0.2;
+                } else if (boss.rotation.y >= 3.90625 && boss.rotation.y <= 5.43875) {
+                    if (boss.position.x <= -100) {
+                        rotate(boss);
+                    }
+                    boss.position.x -= 0.2;
+                }
+            } else {
+                rotate(boss);
+            }
+        }, 0);
+
+        //setting up the monster hit box
+        boss.name = `boss`;
+        boss.hit_box_boss = new THREE.Mesh(hit_box_boss_geometry, hit_box_material);
+        boss.hit_box_boss.name = `boss_hit_box`;
+        monster_list.push(boss.hit_box_boss);
+        boss.castShadow = true;
+        boss.hit_box_boss.position.y = 5;
+        boss.add(boss.hit_box_boss);
+
+        scene.add(boss);
+    });
 
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -589,7 +641,7 @@ for (let p = 0; p < 20; p++) {
         let tree_size = Math.random() * (0.15 - 0.05) + 0.05;
         tree.scale.set(tree_size, tree_size, tree_size);
 
-        tree.position.set(Math.floor(Math.random() * (250 - (-250)) + (-250)),0,Math.floor(Math.random() * (250 - (-250)) + (-250)));
+        tree.position.set(Math.floor(Math.random() * (250 - (-250)) + (-250)), 0, Math.floor(Math.random() * (250 - (-250)) + (-250)));
 
         scene.add(tree);
     });
@@ -653,6 +705,24 @@ function animate() {
         spot_light_sun.position.y += 0.1;
         spot_light_sun.position.x += 1;
         if (spot_light_sun.position.x >= 250) {
+            
+            objects_monsters_list.forEach(monster=>{
+                for (let h = 0; h < monster_list.length; h++) {
+                    if (monster_list[h] != null) {
+                        if (monster_list[h] == monster.children[1]) {
+                            monster_list.splice(h, 1);
+                        }
+                    }
+                }
+                for (let d = 0; d < monster.children; d++) {
+                    if (monster.children[d] != null) {
+                        monster.remove(monster.children[d]);
+                    }
+                }
+                monster.monster_die_sound.play();
+                scene.remove(monster);
+            })
+
             night_day = false;
             monster_spawned = false;
         }
@@ -788,6 +858,43 @@ function animate() {
                         }
                         monster_obj.monster_die_sound.play();
                         scene.remove(monster_obj);
+                    } else if (collision_results[0].object != null && collision_results[0].object.name.indexOf('boss') != -1) {
+                        dead_monster_timer = true;
+                        boss_hit_point--;
+                        if (boss_hit_point <= 0) {
+                            let monster_obj = collision_results[0].object.parent;
+                            let s = 5;
+                            setInterval(() => {
+                                monster_obj.rotation.y += 0.1;
+                                monster_obj.position.y += 1;
+                                monster_obj.scale.set(s, s, s);
+                                s = s - 0.02;
+                            }, 0);
+                            for (let h = 0; h < monster_list.length; h++) {
+                                if (monster_list[h] != null) {
+                                    if (monster_list[h] == monster_obj.children[1]) {
+                                        monster_list.splice(h, 1);
+                                    }
+                                }
+                            }
+                            setTimeout(() => {
+                                for (let d = 0; d < monster_obj.children; d++) {
+                                    if (monster_obj.children[d] != null) {
+                                        monster_obj.remove(monster_obj.children[d]);
+                                    }
+                                }
+                                scene.remove(monster_obj);
+                                setTimeout(()=>{
+                                    setInterval(() => {
+                                        blocker.style.backgroundColor = "black";
+                                        blocker.style.display = 'block';
+                                        instructions.style.display = '';
+                                        instructions.innerHTML = 'YOU WIN THE T-REX !<br>Press F5 to replay';
+                                        controls.unlock();
+                                    }, 0);
+                                },2000)
+                            }, 3000);
+                        }
                     }
                     setTimeout(() => {
                         dead_monster_timer = false;
