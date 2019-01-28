@@ -528,30 +528,28 @@ function init() {
     scene.add(floor_boss);
     floor_boss_hitbox.push(floor_boss);
 
-    //Declaring boss
-    let boss_loader = new THREE.GLTFLoader();
-    boss_loader.load('static/models/boss/scene.gltf', function (gltf) {
-        let boss = gltf.scene;
+    // //Declaring boss
+    // let boss_loader = new THREE.GLTFLoader();
+    // boss_loader.load('static/models/boss/scene.gltf', function (gltf) {
+    //     let boss = gltf.scene;
 
-        boss.traverse(function (node) {
-            if (node instanceof THREE.Mesh) {
-                node.castShadow = true;
-            } else {
-                node.traverse(function (node2) {
-                    if (node2 instanceof THREE.Mesh) {
-                        node2.castShadow = true;
-                    }
-                });
-            }
-        });
-        boss.scale.set(2, 2, 2);
+    //     boss.traverse(function (node) {
+    //         if (node instanceof THREE.Mesh) {
+    //             node.castShadow = true;
+    //         } else {
+    //             node.traverse(function (node2) {
+    //                 if (node2 instanceof THREE.Mesh) {
+    //                     node2.castShadow = true;
+    //                 }
+    //             });
+    //         }
+    //     });
 
-        boss.position.x = 10;
-        boss.position.y = 0;
-        boss.position.z = 10;
+    //     boss.scale.set(2, 2, 2);
+    //     boss.position.set(5,5,5);
 
-        scene.add(boss);
-    });
+    //     scene.add(boss);
+    // });
 
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -591,9 +589,7 @@ for (let p = 0; p < 20; p++) {
         let tree_size = Math.random() * (0.15 - 0.05) + 0.05;
         tree.scale.set(tree_size, tree_size, tree_size);
 
-        tree.position.x = Math.floor(Math.random() * (250 - (-250)) + (-250));
-        tree.position.y = 0;
-        tree.position.z = Math.floor(Math.random() * (250 - (-250)) + (-250));
+        tree.position.set(Math.floor(Math.random() * (250 - (-250)) + (-250)),0,Math.floor(Math.random() * (250 - (-250)) + (-250)));
 
         scene.add(tree);
     });
