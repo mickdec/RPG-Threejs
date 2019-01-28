@@ -1,10 +1,15 @@
 //Declaring global objects
-let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant_hit_box, hit_box_sword, spot_light_sun, spot_light_moon, night_sound, listener, spawner;
+let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant_hit_box,
+    hit_box_sword, spot_light_sun, spot_light_moon, night_sound, listener, spawner;
 
 let gravity = 150;
 let speed = 400;
-let money = 0;
+let money = 50;
 let night_count = 0;
+
+document.getElementById("money").innerHTML = `${money} Money`;
+document.getElementById("jump").innerHTML = `${gravity} Jump Lvl`;
+document.getElementById("speed").innerHTML = `${speed} Speed Lvl`;
 
 let hearth_rng = 70;
 let money_rng = 95;
@@ -36,7 +41,7 @@ let direction = new THREE.Vector3();
 let vertex = new THREE.Vector3();
 let color = new THREE.Color();
 
-let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.0, transparent: true });
+let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, opacity: 0.0, transparent: true, depthWrite: false });
 
 //Declaring the power objects function
 const hit_box_power_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
@@ -523,6 +528,31 @@ function init() {
     scene.add(floor_boss);
     floor_boss_hitbox.push(floor_boss);
 
+    //Declaring boss
+    let boss_loader = new THREE.GLTFLoader();
+    boss_loader.load('static/models/boss/scene.gltf', function (gltf) {
+        let boss = gltf.scene;
+
+        boss.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                node.castShadow = true;
+            } else {
+                node.traverse(function (node2) {
+                    if (node2 instanceof THREE.Mesh) {
+                        node2.castShadow = true;
+                    }
+                });
+            }
+        });
+        boss.scale.set(2, 2, 2);
+
+        boss.position.x = 10;
+        boss.position.y = 0;
+        boss.position.z = 10;
+
+        scene.add(boss);
+    });
+
     //Finnaly setting up the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -701,15 +731,15 @@ function animate() {
                         rng = Math.random() * 100;
                         if (rng > 90) {
                             for (let lucky = 0; lucky < 5; lucky++) {
-                                spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 0.5,
+                                spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 2,
                                     "power_jump", "#0000ff");
-                                spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 0.5,
+                                spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 2,
                                     "power_speed", "#ffffff");
                             }
                         } else {
-                            spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 0.5,
+                            spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 2,
                                 "power_jump", "#0000ff");
-                            spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 0.5,
+                            spawn_power(collision_results[0].object.parent.position.z + Math.random() * 30, collision_results[0].object.parent.position.x + Math.random() * (20 + 5), collision_results[0].object.parent.position.y + 2,
                                 "power_speed", "#ffffff");
                         }
                     }
@@ -810,6 +840,7 @@ function animate() {
                     scene.remove(speed_obj);
                     if (speed <= 1200) {
                         speed += 10;
+                        document.getElementById("speed").innerHTML = `${speed} Speed Lvl`;
                     }
                 }
                 else if (collision_results[0].object.parent != null && collision_results[0].object.name.indexOf('power_jump') != -1) {
@@ -818,6 +849,7 @@ function animate() {
                     scene.remove(jump_obj);
                     if (gravity >= 30) {
                         gravity -= 10;
+                        document.getElementById("jump").innerHTML = `${gravity} Jump Lvl`;
                     }
                 }
                 else if (collision_results[0].object.parent != null && collision_results[0].object.name.indexOf('power_money') != -1) {
