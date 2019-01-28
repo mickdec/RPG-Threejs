@@ -167,6 +167,15 @@ function create_monster() {
                     rotate(monster);
                 }
             }, 0);
+
+            monster.monster_die_sound = new THREE.PositionalAudio(listener);
+            let audioLoader_monster_die = new THREE.AudioLoader();
+            audioLoader_monster_die.load('static/sounds/gob_die.ogg', function (buffer) {
+                monster.monster_die_sound.setBuffer(buffer);
+                monster.monster_die_sound.setRefDistance(20);
+            });
+            monster.add(monster.monster_die_sound);
+
             scene.add(monster);
         });
     }
@@ -751,6 +760,7 @@ function animate() {
                                 monster_obj.remove(monster_obj.children[d]);
                             }
                         }
+                        wolf_obj.monster_die_sound.play();
                         scene.remove(monster_obj);
                     }
                     setTimeout(() => {
