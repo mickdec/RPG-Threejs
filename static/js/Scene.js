@@ -6,6 +6,7 @@ let gravity = 150;
 let speed = 400;
 let money = 50;
 let night_count = 0;
+let stats = new Stats();
 
 document.getElementById("money").innerHTML = `${money} Money`;
 document.getElementById("jump").innerHTML = `${gravity} Jump Lvl`;
@@ -236,7 +237,7 @@ function init() {
     //Declaring the spotlight
     //Declaring the sun
     spot_light_sun = new THREE.SpotLight(0xffffff);
-    spot_light_sun.position.set(250, 100, 0);
+    spot_light_sun.position.set(-250, 100, 0);
     spot_light_sun.angle = 1.5;
     spot_light_sun.penumbra = 1;
     spot_light_sun.decay = 2;
@@ -253,15 +254,15 @@ function init() {
     spot_light_moon = new THREE.SpotLight(0xffffff);
     spot_light_moon.position.set(0, 500, 0);
     spot_light_moon.decay = 2;
-    spot_light_sun.penumbra = 1;
+    spot_light_moon.penumbra = 1;
     spot_light_moon.distance = 4000;
     spot_light_moon.intensity = 0.3;
     spot_light_moon.castShadow = true;
-    spot_light_sun.shadow.mapSize.width = 1024;
-    spot_light_sun.shadow.mapSize.height = 1024;
-    spot_light_sun.shadow.camera.near = 500;
-    spot_light_sun.shadow.camera.far = 4000;
-    spot_light_sun.shadow.camera.fov = 100;
+    spot_light_moon.shadow.mapSize.width = 1024;
+    spot_light_moon.shadow.mapSize.height = 1024;
+    spot_light_moon.shadow.camera.near = 500;
+    spot_light_moon.shadow.camera.far = 4000;
+    spot_light_moon.shadow.camera.fov = 100;
 
     //Declaring the bonfire light
     let light = new THREE.PointLight(0xff4500, 20, 100);
@@ -746,11 +747,17 @@ day_sound_loader.load('static/sounds/day.ogg', function (buffer) {
     day_sound.setVolume(0.5);
 });
 
+stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
+
 //Declaring the whole global animation for the scene
 function animate() {
+    stats.begin();
+    stats.end();
+    
     requestAnimationFrame(animate);
 
-    //Night and day cycle declaration
+    //Luciolles cycle declaration
     mv_luciolle_x++;
     if (mv_luciolle_x <= 1000) {
         luciolles_group.forEach(luciolle => {
@@ -780,8 +787,9 @@ function animate() {
         }
     }
 
+    //Night and day cycle declaration, initializated at : x=250 y=100 z=0
     if (!night_day) {
-        spot_light_sun.position.y -= 0.05;
+        spot_light_sun.position.y -= 0.1;
         spot_light_sun.position.x += 1;
         luciolles_group.forEach(luciolle => {
             luciolle.children[0].intensity += 0.005;
@@ -803,13 +811,34 @@ function animate() {
                 night_count += 100;
             }
         }
-        if (spot_light_sun.position.y <= -10) {
+        if (spot_light_sun.position.y <= -80) {
             night_day = true;
             spot_light_sun.position.x = -250;
             spot_light_sun.position.y = 0;
             clearInterval(spawner);
             spawner = setInterval(() => { }, 100000);
             day_sound.play();
+            setTimeout(()=>{
+                objects_monsters_list.forEach(monster => {
+                    for (let h = 0; h < monster_list.length; h++) {
+                        if (monster_list[h] != null) {
+                            if (monster_list[h] == monster.children[1]) {
+                                monster_list.splice(h, 1);
+                            }
+                        }
+                    }
+                    for (let d = 0; d < monster.children; d++) {
+                        if (monster.children[d] != null) {
+                            monster.remove(monster.children[d]);
+                        }
+                    }
+                    monster.monster_die_sound.play();
+                    scene.remove(monster);
+                })
+                luciolles_group.forEach(luciolle => {
+                    luciolle.children[0].intensity = 0;
+                })
+            },2000)
         }
     } else {
         skybox.material.forEach(material => {
@@ -823,26 +852,9 @@ function animate() {
         })
         spot_light_sun.position.y += 0.1;
         spot_light_sun.position.x += 1;
-        if (spot_light_sun.position.x >= 250) {
-            objects_monsters_list.forEach(monster => {
-                for (let h = 0; h < monster_list.length; h++) {
-                    if (monster_list[h] != null) {
-                        if (monster_list[h] == monster.children[1]) {
-                            monster_list.splice(h, 1);
-                        }
-                    }
-                }
-                for (let d = 0; d < monster.children; d++) {
-                    if (monster.children[d] != null) {
-                        monster.remove(monster.children[d]);
-                    }
-                }
-                monster.monster_die_sound.play();
-                scene.remove(monster);
-            })
-            luciolles_group.forEach(luciolle => {
-                luciolle.children[0].intensity = 0;
-            })
+        if (spot_light_sun.position.y >= 100) {
+            spot_light_sun.position.y = 100;
+            spot_light_sun.position.x = -250;
             night_day = false;
             monster_spawned = false;
         }
