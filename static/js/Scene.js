@@ -648,6 +648,14 @@ function init() {
         boss.hit_box_boss.position.y = 5;
         boss.add(boss.hit_box_boss);
 
+        boss.boss_hit_sound = new THREE.PositionalAudio(listener);
+        let audioLoader_monster_hit = new THREE.AudioLoader();
+        audioLoader_monster_hit.load('static/sounds/gob_die.ogg', function (buffer) {
+            boss.boss_hit_sound.setBuffer(buffer);
+            boss.boss_hit_sound.setRefDistance(20);
+        });
+        boss.add(boss.boss_hit_sound);
+
         scene.add(boss);
     });
 
@@ -669,7 +677,7 @@ function onWindowResize() {
 }
 
 //Declaring trees spawn
-for (let p = 0; p < 12; p++) {
+for (let p = 0; p < 7; p++) {
     let tree_loader = new THREE.GLTFLoader();
     tree_loader.load('static/models/tree/scene.gltf', function (gltf) {
         let tree = gltf.scene;
@@ -695,7 +703,7 @@ for (let p = 0; p < 12; p++) {
     });
 }
 setTimeout(() => {
-    for (let p = 0; p < 12; p++) {
+    for (let p = 0; p < 7; p++) {
         let tree_loader = new THREE.GLTFLoader();
         tree_loader.load('static/models/tree/scene.gltf', function (gltf) {
             let tree = gltf.scene;
@@ -972,6 +980,7 @@ function animate() {
                     } else if (collision_results[0].object != null && collision_results[0].object.name.indexOf('boss') != -1) {
                         dead_monster_timer = true;
                         boss_hit_point--;
+                        boss.boss_hit_sound.play();
                         if (boss_hit_point <= 0) {
                             let monster_obj = collision_results[0].object.parent;
                             let s = 5;
