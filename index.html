@@ -92,6 +92,9 @@
 </style>
 
 <body>
+    <div id="loading">
+        <div id="load_text"></div>
+    </div>
     <div id="blocker">
         <div id="instructions">
             <span><b>GOBLINS WILL APEAR AT NIGHT !!!!</b></span>
@@ -117,6 +120,41 @@
         </div>
     </div>
     <script>
+        let i = 8;
+        loader = setInterval(() => {
+            if (i <= 0) {
+                i--;
+                document.getElementById('blocker').style.position = "inherit";
+                document.getElementById('load_text').style.fontSize = "0";
+                document.getElementById('loading').style.display = "none";
+                document.getElementById('loading').style.width = "0";
+                document.getElementById('loading').style.height = "0";
+                document.getElementById('canva').style.width = "100%";
+                document.getElementById('canva').style.height = "100%";
+                document.getElementById('blocker').style.display = "";
+                document.getElementById('blocker').style.position = "absolute";
+                document.getElementById('layout').style.display = "";
+                document.getElementById('layout').style.position = "absolute";
+                clearInterval(loader);
+            } else {
+                i--;
+                document.getElementById('load_text').innerHTML = `Loading the game ${i}...`;
+                document.getElementById('load_text').style.color = "white";
+                document.getElementById('load_text').style.textAlign = "center";
+                document.getElementById('load_text').style.fontSize = "30px";
+                document.getElementById('load_text').style.paddingTop = "25%";
+                document.getElementById('loading').style.backgroundColor = "black";
+                document.getElementById('loading').style.width = "100%";
+                document.getElementById('loading').style.height = "100%";
+                document.getElementById('loading').style.position = "absolute";
+                document.getElementById('canva').style.width = "0";
+                document.getElementById('canva').style.height = "0";
+                document.getElementById('blocker').style.display = "none";
+                document.getElementById('blocker').style.position = "inherit";
+                document.getElementById('layout').style.display = "none";
+                document.getElementById('layout').style.position = "inherit";
+            }
+        }, 1000);
         document.getElementById("money").innerHTML = `0 Money`;
         document.getElementById("jump").innerHTML = `0 Jump Lvl`;
         document.getElementById("speed").innerHTML = `0 Speed Lvl`;
