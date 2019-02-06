@@ -2,8 +2,8 @@
 let camera, scene, renderer, controls, skybox, raycaster, sword, hit_box_player, player_health, merchant_hit_box,
     hit_box_sword, spot_light_sun, spot_light_moon, night_sound, listener, spawner, light_group;
 
-let gravity = 150;
-let speed = 400;
+let gravity = 100;
+let speed = 500;
 let money = 50;
 let night_count = 0;
 let stats = new Stats();
@@ -16,16 +16,16 @@ let hearth_rng = 70;
 let money_rng = 95;
 let speed_rng = 50;
 let jump_rng = 10;
-let boss_hit_point = 5;
-let mv_luciolle_y = 0;
-let mv_luciolle_x = 0;
+let boss_hit_point = 3;
+// let mv_luciolle_y = 0;
+// let mv_luciolle_x = 0;
 
 let floor_boss_hitbox = [];
 let monster_list = [];
 let objects_monsters_list = []
 let power_list = [];
 let market_list = [];
-let luciolles_group = [];
+// let luciolles_group = [];
 
 let move_forward = false;
 let move_backward = false;
@@ -47,7 +47,8 @@ let direction = new THREE.Vector3();
 let vertex = new THREE.Vector3();
 let color = new THREE.Color();
 
-let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, opacity: 0.0, transparent: true, depthWrite: false });
+// let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, opacity: 0.0, transparent: true, depthWrite: false });
+let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe : true });
 
 //Declaring the power objects function
 const hit_box_power_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
@@ -270,54 +271,54 @@ function init() {
     light.position.set(5, 5, 0);
 
     //Declaring blue luciolles
-    const luciolle_geometry = new THREE.SphereGeometry(0.1, 10, 10);
-    const luciolle_material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-    light_group = new THREE.Group();
-    for (let b = 0; b < 2; b++) {
-        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
-        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
-        luciolle_light.castShadow = true;
-        luciolle.add(luciolle_light);
-        luciolles_group.push(luciolle);
-        luciolle.position.set(Math.random() * 250, 5, Math.random() * 250);
-        light_group.add(luciolle)
-    }
-    for (let b = 0; b < 2; b++) {
-        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
-        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
-        luciolle_light.castShadow = true;
-        luciolle.add(luciolle_light);
-        luciolles_group.push(luciolle);
-        luciolle.position.set(Math.random() * -250, 5, Math.random() * 250);
-        light_group.add(luciolle)
-    }
-    for (let b = 0; b < 2; b++) {
-        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
-        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
-        luciolle_light.castShadow = true;
-        luciolle.add(luciolle_light);
-        luciolles_group.push(luciolle);
-        luciolle.position.set(Math.random() * 250, 5, Math.random() * -250);
-        light_group.add(luciolle)
-    }
-    for (let b = 0; b < 2; b++) {
-        let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
-        let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
-        luciolle_light.castShadow = true;
-        luciolle.add(luciolle_light);
-        luciolles_group.push(luciolle);
-        luciolle.position.set(Math.random() * -250, 5, Math.random() * -250);
-        light_group.add(luciolle)
-    }
+    // const luciolle_geometry = new THREE.SphereGeometry(0.1, 10, 10);
+    // const luciolle_material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    // light_group = new THREE.Group();
+    // for (let b = 0; b < 2; b++) {
+    //     let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+    //     let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+    //     luciolle_light.castShadow = true;
+    //     luciolle.add(luciolle_light);
+    //     luciolles_group.push(luciolle);
+    //     luciolle.position.set(Math.random() * 250, 5, Math.random() * 250);
+    //     light_group.add(luciolle)
+    // }
+    // for (let b = 0; b < 2; b++) {
+    //     let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+    //     let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+    //     luciolle_light.castShadow = true;
+    //     luciolle.add(luciolle_light);
+    //     luciolles_group.push(luciolle);
+    //     luciolle.position.set(Math.random() * -250, 5, Math.random() * 250);
+    //     light_group.add(luciolle)
+    // }
+    // for (let b = 0; b < 2; b++) {
+    //     let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+    //     let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+    //     luciolle_light.castShadow = true;
+    //     luciolle.add(luciolle_light);
+    //     luciolles_group.push(luciolle);
+    //     luciolle.position.set(Math.random() * 250, 5, Math.random() * -250);
+    //     light_group.add(luciolle)
+    // }
+    // for (let b = 0; b < 2; b++) {
+    //     let luciolle = new THREE.Mesh(luciolle_geometry, luciolle_material);
+    //     let luciolle_light = new THREE.PointLight(0x0000ff, 0, 100, 2);
+    //     luciolle_light.castShadow = true;
+    //     luciolle.add(luciolle_light);
+    //     luciolles_group.push(luciolle);
+    //     luciolle.position.set(Math.random() * -250, 5, Math.random() * -250);
+    //     light_group.add(luciolle)
+    // }
 
-    scene.add(spot_light_sun, spot_light_moon, light, light_group);
+    scene.add(spot_light_sun, spot_light_moon, light);
 
     //Declaring the bonfire sound
     let sound_bonfire = new THREE.PositionalAudio(listener);
     let audioLoader_sound_bonfire = new THREE.AudioLoader();
     audioLoader_sound_bonfire.load('static/sounds/bonfire.ogg', function (buffer) {
         sound_bonfire.setBuffer(buffer);
-        sound_bonfire.setRefDistance(20);
+        sound_bonfire.setRefDistance(15);
         sound_bonfire.setLoop(true);
         sound_bonfire.play();
     });
@@ -577,7 +578,7 @@ function init() {
     floor_boss_hitbox.push(floor_boss);
 
     //Declaring boss
-    const hit_box_boss_geometry = new THREE.CubeGeometry(20, 20, 20, 3, 3, 3);
+    const hit_box_boss_geometry = new THREE.CubeGeometry(7, 10, 20, 3, 3, 3);
     let boss_loader = new THREE.GLTFLoader();
     boss_loader.load('static/models/boss/scene.gltf', function (gltf) {
         let boss = gltf.scene;
@@ -648,14 +649,6 @@ function init() {
         boss.castShadow = true;
         boss.hit_box_boss.position.y = 5;
         boss.add(boss.hit_box_boss);
-
-        boss.boss_hit_sound = new THREE.PositionalAudio(listener);
-        let audioLoader_monster_hit = new THREE.AudioLoader();
-        audioLoader_monster_hit.load('static/sounds/gob_die.ogg', function (buffer) {
-            boss.boss_hit_sound.setBuffer(buffer);
-            boss.boss_hit_sound.setRefDistance(20);
-        });
-        boss.add(boss.boss_hit_sound);
 
         scene.add(boss);
     });
@@ -757,43 +750,43 @@ function animate() {
     
     requestAnimationFrame(animate);
 
-    //Luciolles cycle declaration
-    mv_luciolle_x++;
-    if (mv_luciolle_x <= 1000) {
-        luciolles_group.forEach(luciolle => {
-            luciolle.position.x += 0.1;
-        })
-    } else if (mv_luciolle_x > 1000) {
-        luciolles_group.forEach(luciolle => {
-            luciolle.position.x -= 0.1;
-        })
-        if (mv_luciolle_x >= 2000) {
-            mv_luciolle_x = 0;
-        }
-    }
-    mv_luciolle_y++;
-    if (mv_luciolle_y <= 100) {
-        luciolles_group.forEach(luciolle => {
-            luciolle.position.y += 0.1;
-            luciolle.children[0].distance += 1;
-        })
-    } else if (mv_luciolle_y > 100) {
-        luciolles_group.forEach(luciolle => {
-            luciolle.position.y -= 0.1;
-            luciolle.children[0].distance -= 1;
-        })
-        if (mv_luciolle_y >= 200) {
-            mv_luciolle_y = 0;
-        }
-    }
+    // //Luciolles cycle declaration
+    // mv_luciolle_x++;
+    // if (mv_luciolle_x <= 1000) {
+    //     luciolles_group.forEach(luciolle => {
+    //         luciolle.position.x += 0.1;
+    //     })
+    // } else if (mv_luciolle_x > 1000) {
+    //     luciolles_group.forEach(luciolle => {
+    //         luciolle.position.x -= 0.1;
+    //     })
+    //     if (mv_luciolle_x >= 2000) {
+    //         mv_luciolle_x = 0;
+    //     }
+    // }
+    // mv_luciolle_y++;
+    // if (mv_luciolle_y <= 100) {
+    //     luciolles_group.forEach(luciolle => {
+    //         luciolle.position.y += 0.1;
+    //         luciolle.children[0].distance += 1;
+    //     })
+    // } else if (mv_luciolle_y > 100) {
+    //     luciolles_group.forEach(luciolle => {
+    //         luciolle.position.y -= 0.1;
+    //         luciolle.children[0].distance -= 1;
+    //     })
+    //     if (mv_luciolle_y >= 200) {
+    //         mv_luciolle_y = 0;
+    //     }
+    // }
 
     //Night and day cycle declaration, initializated at : x=250 y=100 z=0
     if (!night_day) {
         spot_light_sun.position.y -= 0.1;
         spot_light_sun.position.x += 1;
-        luciolles_group.forEach(luciolle => {
-            luciolle.children[0].intensity += 0.005;
-        })
+        // luciolles_group.forEach(luciolle => {
+        //     luciolle.children[0].intensity += 0.005;
+        // })
         skybox.material.forEach(material => {
             if (material.opacity >= 0) {
                 material.opacity -= 0.001;
@@ -835,9 +828,9 @@ function animate() {
                     monster.monster_die_sound.play();
                     scene.remove(monster);
                 })
-                luciolles_group.forEach(luciolle => {
-                    luciolle.children[0].intensity = 0;
-                })
+                // luciolles_group.forEach(luciolle => {
+                //     luciolle.children[0].intensity = 0;
+                // })
             },2000)
         }
     } else {
@@ -847,9 +840,9 @@ function animate() {
                 material.transparent = true;
             }
         });
-        luciolles_group.forEach(luciolle => {
-            luciolle.children[0].intensity -= 0.005;
-        })
+        // luciolles_group.forEach(luciolle => {
+        //     luciolle.children[0].intensity -= 0.005;
+        // })
         spot_light_sun.position.y += 0.1;
         spot_light_sun.position.x += 1;
         if (spot_light_sun.position.y >= 100) {
@@ -864,7 +857,8 @@ function animate() {
     document.addEventListener('click', () => {
         if (!attack_timer) {
             attack_timer = true;
-            let hit_box_sword_geometry = new THREE.CubeGeometry(2, 10, 25, 1, 1, 1);
+
+            let hit_box_sword_geometry = new THREE.CubeGeometry(2, 10, 30, 1, 1, 1);
             hit_box_sword = new THREE.Mesh(hit_box_sword_geometry, hit_box_material);
             hit_box_sword.position.x = controls.getObject().position.x;
             hit_box_sword.position.y = controls.getObject().position.y;
@@ -922,8 +916,8 @@ function animate() {
             if (collision_results.length > 0 && direction_vector.length() < 16 && collision_results[0].distance < direction_vector.length()) {
                 if (!buying_action) {
                     buying_action = true;
-                    if (money >= 20) {
-                        money -= 20;
+                    if (money >= 5) {
+                        money -= 5;
                         document.getElementById('money').innerHTML = money + " Money";
                         rng = Math.random() * 100;
                         if (rng > 90) {
@@ -962,15 +956,15 @@ function animate() {
                                 "power_health", "#ff0000")
                         }
                         if (rng <= money_rng) {
-                            spawn_power(collision_results[0].object.parent.position.z + 3, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y + 2,
+                            spawn_power(collision_results[0].object.parent.position.z - 3, collision_results[0].object.parent.position.x + 3, collision_results[0].object.parent.position.y + 2,
                                 "power_money", "#ffff00")
                         }
                         if (rng <= speed_rng) {
-                            spawn_power(collision_results[0].object.parent.position.z + 3, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y + 2,
+                            spawn_power(collision_results[0].object.parent.position.z + 3, collision_results[0].object.parent.position.x + 3, collision_results[0].object.parent.position.y + 2,
                                 "power_jump", "#0000ff")
                         }
                         if (rng <= jump_rng) {
-                            spawn_power(collision_results[0].object.parent.position.z + 3, collision_results[0].object.parent.position.x, collision_results[0].object.parent.position.y + 2,
+                            spawn_power(collision_results[0].object.parent.position.z + 3, collision_results[0].object.parent.position.x - 3, collision_results[0].object.parent.position.y + 2,
                                 "power_speed", "#ffffff")
                         }
 
@@ -992,7 +986,13 @@ function animate() {
                     } else if (collision_results[0].object != null && collision_results[0].object.name.indexOf('boss') != -1) {
                         dead_monster_timer = true;
                         boss_hit_point--;
-                        boss.boss_hit_sound.play();
+                        let boss_hit_sound = new THREE.PositionalAudio(listener);
+                        let audioLoader_boss_hit = new THREE.AudioLoader();
+                        audioLoader_boss_hit.load('static/sounds/trexroar.ogg', function (buffer) {
+                            boss_hit_sound.setBuffer(buffer);
+                            boss_hit_sound.setRefDistance(20);
+                            boss_hit_sound.play();
+                        });
                         if (boss_hit_point <= 0) {
                             let monster_obj = collision_results[0].object.parent;
                             let s = 5;
@@ -1083,7 +1083,7 @@ function animate() {
                     jump_obj.remove(jump_obj.children[0]);
                     scene.remove(jump_obj);
                     if (gravity >= 30) {
-                        gravity -= 10;
+                        gravity -= 5;
                         document.getElementById("jump").innerHTML = `${gravity} Jump Lvl`;
                     }
                 }
@@ -1138,6 +1138,9 @@ function animate() {
         }
         if (controls.getObject().position.z <= -250) {
             controls.getObject().position.z = -249;
+        }
+        if (controls.getObject().position.y >= 500) {
+            controls.getObject().position.y = 499;
         }
 
         controls.getObject().translateX(velocity.x * delta);
