@@ -247,13 +247,13 @@ function init() {
     spot_light_sun.castShadow = true;
     spot_light_sun.shadow.mapSize.width = 1024;
     spot_light_sun.shadow.mapSize.height = 1024;
-    spot_light_sun.shadow.camera.near = 500;
-    spot_light_sun.shadow.camera.far = 4000;
-    spot_light_sun.shadow.camera.fov = 100;
+    spot_light_sun.shadow.camera.near = 0.5;
+    spot_light_sun.shadow.camera.far = 500;
 
     //Declaring the moon
     spot_light_moon = new THREE.SpotLight(0xffffff);
     spot_light_moon.position.set(0, 500, 0);
+    spot_light_sun.angle = 1.5;
     spot_light_moon.decay = 2;
     spot_light_moon.penumbra = 1;
     spot_light_moon.distance = 4000;
@@ -261,9 +261,8 @@ function init() {
     spot_light_moon.castShadow = true;
     spot_light_moon.shadow.mapSize.width = 1024;
     spot_light_moon.shadow.mapSize.height = 1024;
-    spot_light_moon.shadow.camera.near = 500;
-    spot_light_moon.shadow.camera.far = 4000;
-    spot_light_moon.shadow.camera.fov = 100;
+    spot_light_moon.shadow.camera.near = 0.5;
+    spot_light_moon.shadow.camera.far = 500;
 
     //Declaring the bonfire light
     let light = new THREE.PointLight(0xff4500, 20, 100);
@@ -585,11 +584,11 @@ function init() {
 
         boss.traverse(function (node) {
             if (node instanceof THREE.Mesh) {
-                node.castShadow = true;
+                node.castShadow = false;
             } else {
                 node.traverse(function (node2) {
                     if (node2 instanceof THREE.Mesh) {
-                        node2.castShadow = true;
+                        node2.castShadow = false;
                     }
                 });
             }
