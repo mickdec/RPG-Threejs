@@ -47,8 +47,8 @@ let direction = new THREE.Vector3();
 let vertex = new THREE.Vector3();
 let color = new THREE.Color();
 
-// let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, opacity: 0.0, transparent: true, depthWrite: false });
-let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe : true });
+let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, opacity: 0.0, transparent: true, depthWrite: false });
+//let hit_box_material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe : true });
 
 //Declaring the power objects function
 const hit_box_power_geometry = new THREE.CubeGeometry(2, 10, 2, 1, 1, 1);
