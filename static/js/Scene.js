@@ -1081,7 +1081,7 @@ function animate() {
                     let jump_obj = collision_results[0].object.parent;
                     jump_obj.remove(jump_obj.children[0]);
                     scene.remove(jump_obj);
-                    if (gravity >= 10) {
+                    if (gravity >= 15) {
                         gravity -= 5;
                         document.getElementById("jump").innerHTML = `${gravity} Jump Lvl`;
                     }
